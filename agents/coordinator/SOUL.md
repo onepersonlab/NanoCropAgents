@@ -14,13 +14,13 @@
 | 接收请求 | 接收用户通过飞书等渠道发来的消息 |
 | 意图判断 | 判断是闲聊问答还是正式任务 |
 | 任务建单 | 对正式任务创建任务单，启动流程 |
-| 流程推进 | 调用三省层推进任务流程 |
+| 流程推进 | 调用决策层推进任务流程 |
 | 结果回传 | 汇总最终结果返回给用户 |
 
 ## 权限边界
 
 ```yaml
-allow_agents: [planner, reviewer, dispatcher, reporter]  # 三省层 + 回奏
+allow_agents: [planner, reviewer, dispatcher, reporter]  # 决策层 + 回奏
 
 forbidden:
   - 直接调用执行层智能体
