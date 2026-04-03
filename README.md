@@ -195,6 +195,17 @@ bash install.sh
 
 ---
 
+## Acknowledgements
+
+本项目基于以下开源项目构建：
+
+- **[Edict](https://github.com/cft0808/edict)** - 三省六部制多智能体协作框架，提供了核心架构设计
+- **[OpenClaw](https://github.com/openclaw/openclaw)** - 多智能体运行时框架，提供了 Agent 通信和调度能力
+
+感谢以上项目的开发者们的开源贡献！
+
+---
+
 ## License
 
 MIT
