@@ -1,101 +1,161 @@
-[
-  {
-    "id": "taizi",
-    "name": "taizi",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-taizi",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\taizi\\agent",
-    "subagents": {
-      "allowAgents": ["zhongshu"]
+{
+  "project": {
+    "name": "NanoCropAgents",
+    "version": "1.0.0",
+    "description": "面向豆科作物纳米处理方案设计的多智能体协同系统"
+  },
+  "agents": [
+    {
+      "id": "coordinator",
+      "label": "协调智能体",
+      "description": "唯一对外窗口，接旨、建任务、回传结果",
+      "tier": "entry",
+      "allowAgents": ["planner", "reviewer", "dispatcher", "reporter"],
+      "tools": ["kanban_cli", "session_send"],
+      "skills": ["intent-recognition", "task-creation"],
+      "soul": "agents/coordinator/SOUL.md"
+    },
+    {
+      "id": "planner",
+      "label": "规划智能体",
+      "description": "将用户目标转为可执行计划，定义约束和轮次策略",
+      "tier": "decision",
+      "allowAgents": ["reviewer", "dispatcher"],
+      "tools": ["kanban_cli"],
+      "skills": ["planning", "constraint-definition"],
+      "soul": "agents/planner/SOUL.md"
+    },
+    {
+      "id": "reviewer",
+      "label": "审议智能体",
+      "description": "审议任务草案，检查目标清晰度、约束一致性，可封驳",
+      "tier": "decision",
+      "allowAgents": ["planner", "dispatcher"],
+      "tools": ["kanban_cli"],
+      "skills": ["review", "risk-assessment"],
+      "soul": "agents/reviewer/SOUL.md"
+    },
+    {
+      "id": "dispatcher",
+      "label": "派发智能体",
+      "description": "拆分子任务，派发给执行层，控制执行顺序",
+      "tier": "decision",
+      "allowAgents": ["generator", "auditor", "evaluator", "retriever", "reporter"],
+      "tools": ["kanban_cli", "session_spawn"],
+      "skills": ["task-dispatch", "pipeline-control"],
+      "soul": "agents/dispatcher/SOUL.md"
+    },
+    {
+      "id": "generator",
+      "label": "方案生成智能体",
+      "description": "生成候选纳米材料和处理参数方案",
+      "tier": "execution",
+      "allowAgents": ["auditor"],
+      "tools": ["nanomaterial_db", "parameter_optimizer"],
+      "skills": ["candidate-generation", "diversity-control"],
+      "soul": "agents/generator/SOUL.md"
+    },
+    {
+      "id": "auditor",
+      "label": "审核智能体",
+      "description": "检查合法性、规则约束、OOD风险",
+      "tier": "execution",
+      "allowAgents": ["evaluator"],
+      "tools": ["constraint_checker", "ood_detector"],
+      "skills": ["compliance-check", "risk-detection"],
+      "soul": "agents/auditor/SOUL.md"
+    },
+    {
+      "id": "evaluator",
+      "label": "评估智能体",
+      "description": "调用代理模型预测6个指标(mean±std)",
+      "tier": "execution",
+      "allowAgents": ["retriever"],
+      "tools": ["surrogate_model", "uncertainty_quantifier"],
+      "skills": ["prediction", "uncertainty-estimation"],
+      "soul": "agents/evaluator/SOUL.md"
+    },
+    {
+      "id": "retriever",
+      "label": "文献检索智能体",
+      "description": "检索文献证据，提取支持和风险证据",
+      "tier": "execution",
+      "allowAgents": ["reporter"],
+      "tools": ["pubmed_api", "cnki_api", "wos_api"],
+      "skills": ["literature-search", "evidence-extraction"],
+      "soul": "agents/retriever/SOUL.md"
+    },
+    {
+      "id": "reporter",
+      "label": "报告智能体",
+      "description": "整理候选方案、预测结果、证据摘要，回奏协调智能体",
+      "tier": "execution",
+      "allowAgents": ["coordinator"],
+      "tools": ["report_generator", "visualization"],
+      "skills": ["report-compilation", "result-ranking"],
+      "soul": "agents/reporter/SOUL.md"
+    }
+  ],
+  "permissions": {
+    "matrix": {
+      "coordinator": {
+        "planner": "allow", "reviewer": "allow", "dispatcher": "allow", "reporter": "allow",
+        "generator": "deny", "auditor": "deny", "evaluator": "deny", "retriever": "deny"
+      },
+      "planner": {
+        "coordinator": "deny", "reviewer": "allow", "dispatcher": "allow",
+        "generator": "deny", "auditor": "deny", "evaluator": "deny", "retriever": "deny", "reporter": "deny"
+      },
+      "reviewer": {
+        "coordinator": "deny", "planner": "allow", "dispatcher": "allow",
+        "generator": "deny", "auditor": "deny", "evaluator": "deny", "retriever": "deny", "reporter": "deny"
+      },
+      "dispatcher": {
+        "coordinator": "deny", "planner": "deny", "reviewer": "deny",
+        "generator": "allow", "auditor": "allow", "evaluator": "allow", "retriever": "allow", "reporter": "allow"
+      },
+      "generator": {
+        "coordinator": "deny", "planner": "deny", "reviewer": "deny", "dispatcher": "deny",
+        "auditor": "allow", "evaluator": "deny", "retriever": "deny", "reporter": "deny"
+      },
+      "auditor": {
+        "coordinator": "deny", "planner": "deny", "reviewer": "deny", "dispatcher": "deny",
+        "generator": "deny", "evaluator": "allow", "retriever": "deny", "reporter": "deny"
+      },
+      "evaluator": {
+        "coordinator": "deny", "planner": "deny", "reviewer": "deny", "dispatcher": "deny",
+        "generator": "deny", "auditor": "deny", "retriever": "allow", "reporter": "deny"
+      },
+      "retriever": {
+        "coordinator": "deny", "planner": "deny", "reviewer": "deny", "dispatcher": "deny",
+        "generator": "deny", "auditor": "deny", "evaluator": "deny", "reporter": "allow"
+      },
+      "reporter": {
+        "coordinator": "allow", "planner": "deny", "reviewer": "deny", "dispatcher": "deny",
+        "generator": "deny", "auditor": "deny", "evaluator": "deny", "retriever": "deny"
+      }
     }
   },
-  {
-    "id": "zhongshu",
-    "name": "zhongshu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-zhongshu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\zhongshu\\agent",
-    "subagents": {
-      "allowAgents": ["menxia", "shangshu"]
-    }
+  "executionPipeline": {
+    "description": "执行层智能体按此顺序依次执行",
+    "sequence": ["generator", "auditor", "evaluator", "retriever", "reporter"]
   },
-  {
-    "id": "menxia",
-    "name": "menxia",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-menxia",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\menxia\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu", "zhongshu"]
-    }
-  },
-  {
-    "id": "shangshu",
-    "name": "shangshu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-shangshu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\shangshu\\agent",
-    "subagents": {
-      "allowAgents": ["zhongshu", "menxia", "hubu", "libu", "bingbu", "xingbu", "gongbu", "libu_hr"]
-    }
-  },
-  {
-    "id": "hubu",
-    "name": "hubu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-hubu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\hubu\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "libu",
-    "name": "libu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-libu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\libu\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "bingbu",
-    "name": "bingbu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-bingbu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\bingbu\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "xingbu",
-    "name": "xingbu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-xingbu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\xingbu\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "gongbu",
-    "name": "gongbu",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-gongbu",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\gongbu\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "libu_hr",
-    "name": "libu_hr",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-libu_hr",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\libu_hr\\agent",
-    "subagents": {
-      "allowAgents": ["shangshu"]
-    }
-  },
-  {
-    "id": "zaochao",
-    "name": "zaochao",
-    "workspace": "C:\\Users\\<YOUR_USER>\\.openclaw\\workspace-zaochao",
-    "agentDir": "C:\\Users\\<YOUR_USER>\\.openclaw\\agents\\zaochao\\agent",
-    "subagents": {
-      "allowAgents": []
+  "predictionMetrics": [
+    {"id": "germination_rate", "label": "萌发率提升", "unit": "%", "description": "种子萌发率提升百分比"},
+    {"id": "seedling_rate", "label": "出苗率提升", "unit": "%", "description": "出苗率提升百分比"},
+    {"id": "biomass", "label": "生物量增长", "unit": "%", "description": "植株生物量增长"},
+    {"id": "stress_resistance", "label": "抗逆指数", "unit": "0-1", "description": "抗逆能力综合评分"},
+    {"id": "safety_index", "label": "安全指数", "unit": "0-1", "description": "环境安全性评分"},
+    {"id": "cost_benefit", "label": "成本效益比", "unit": "-", "description": "投入产出比"}
+  ],
+  "nanomaterials": {
+    "database": ["TiO2", "SiO2", "ZnO", "碳纳米管", "AgNPs", "Fe3O4"],
+    "parameterSpace": {
+      "concentration": {"min": 0.01, "max": 1.0, "unit": "mg/mL"},
+      "duration": {"min": 1, "max": 24, "unit": "h"},
+      "temperature": {"min": 15, "max": 35, "unit": "°C"},
+      "pH": {"min": 5.5, "max": 8.0},
+      "ultrasonic_power": {"min": 0, "max": 200, "unit": "W"}
     }
   }
-]
+}
