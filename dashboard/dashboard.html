@@ -44,7 +44,7 @@
     .tbadge{font-size:10px;padding:1px 5px;border-radius:999px;background:#1a2040;color:var(--acc);margin-left:4px}
     .panel{display:none}.panel.active{display:block}
 
-    /* ══ 旨意看板 ══ */
+    /* ══ 任务看板 ══ */
     .edict-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:12px}
     .edict-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;cursor:pointer;transition:border-color .15s,transform .1s,box-shadow .15s}
     .edict-card:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:0 4px 20px rgba(106,158,255,.1)}
@@ -68,15 +68,15 @@
 
     /* state colors */
     .st-Inbox{border-color:#3a4a7a44;color:#7a9aff;background:#0a1028}
-    .st-Zhongshu{border-color:#a07aff44;color:#a07aff;background:#110a28}
-    .st-Taizi{border-color:#e8a04044;color:#e8a040;background:#281a08}
-    .st-Menxia{border-color:#ff9a6a44;color:#ff9a6a;background:#280f0a}
+    .st-Planning{border-color:#a07aff44;color:#a07aff;background:#110a28}
+    .st-Coordinator{border-color:#e8a04044;color:#e8a040;background:#281a08}
+    .st-Reviewing{border-color:#ff9a6a44;color:#ff9a6a;background:#280f0a}
     .st-Assigned,.st-Doing{border-color:#6a9eff44;color:#6a9eff;background:#0a1428}
     .st-Review{border-color:#f5c84244;color:#f5c842;background:#201a08}
     .st-Done{border-color:#2ecc8a44;color:var(--ok);background:#0a2018}
     .st-Blocked{border-color:#ff527044;color:var(--danger);background:#200a10}
     .st-Cancelled{border-color:#88888844;color:#888;background:#1a1a1a}
-    .st-Next{border-color:#4a9adf44;color:#4a9adf;background:#0a1424}
+    .st-Dispatching{border-color:#4a9adf44;color:#4a9adf;background:#0a1424}
 
     /* dept colors */
     .dt-规划智能体{border-color:#a07aff44;color:#a07aff;background:#1a0f38}
@@ -666,13 +666,13 @@
   <div class="hdr">
     <div>
       <div class="logo">⚔️ NanoCropAgents · 智能体总控台</div>
-      <div class="sub">皇上视角 · 实时旨意追踪</div>
+      <div class="sub">用户视角 · 实时任务追踪</div>
     </div>
     <div class="hdr-r">
       <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="切换主题">🌙</button>
       <button class="theme-toggle" onclick="openFeedback()" title="祈告上苍（反馈问题或建议）">🙏 祈告上苍</button>
       <span class="chip" id="chip-sync">⟳ 同步中</span>
-      <span class="chip" id="chip-tasks">— 旨意</span>
+      <span class="chip" id="chip-tasks">— 任务</span>
       <button class="btn-refresh" onclick="loadAll()">⟳ 立即刷新</button>
       <span id="cd"></span>
     </div>
@@ -680,18 +680,18 @@
 
   <!-- TABS -->
   <div class="tabs">
-    <div class="tab active" data-tab="edicts">📜 旨意看板 <span class="tbadge" id="tb-e">0</span></div>
+    <div class="tab active" data-tab="edicts">📜 任务看板 <span class="tbadge" id="tb-e">0</span></div>
     <div class="tab" data-tab="monitor">🔭 省部调度 <span class="tbadge" id="tb-m">0</span></div>
     <div class="tab" data-tab="officials">👥 官员总览</div>
     <div class="tab" data-tab="models">⚙️ 模型配置</div>
     <div class="tab" data-tab="skills">🛠️ 技能配置</div>
     <div class="tab" data-tab="sessions">💬 小任务 <span class="tbadge" id="tb-s">0</span></div>
-    <div class="tab" data-tab="memorials">📜 奏折阁 <span class="tbadge" id="tb-mem">0</span></div>
+    <div class="tab" data-tab="memorials">📜 报告存档 <span class="tbadge" id="tb-mem">0</span></div>
     <div class="tab" data-tab="templates">📜 旨库</div>
     <div class="tab" data-tab="morning">📰 天下要闻</div>
   </div>
 
-  <!-- ══ 旨意看板 ══ -->
+  <!-- ══ 任务看板 ══ -->
   <div class="panel active" id="panel-edicts">
     <div class="archive-bar" id="archive-bar">
       <span class="ab-label">📋 筛选：</span>
@@ -712,7 +712,7 @@
   <!-- ══ 省部调度 ══ -->
   <div class="panel" id="panel-monitor">
     <div id="agent-status-panel"></div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">各省部当前承接旨意与执行状态 · 每5秒自动刷新</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px">各智能体当前承接任务与执行状态 · 每5秒自动刷新</div>
     <div class="duty-grid" id="duty-grid"></div>
   </div>
 
@@ -760,12 +760,12 @@
     <div id="sess-grid" class="sess-grid"></div>
   </div>
 
-  <!-- ══ 奏折阁 ══ -->
+  <!-- ══ 报告存档 ══ -->
   <div class="panel" id="panel-memorials">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
       <div style="flex:1">
-        <div class="sec-title" style="margin-bottom:2px">📜 奏折阁 · 旨意存档</div>
-        <div style="font-size:11px;color:var(--muted)">任务完成后自动生成奏折，记录从下旨到完成的完整过程</div>
+        <div class="sec-title" style="margin-bottom:2px">📜 报告存档 · 任务存档</div>
+        <div style="font-size:11px;color:var(--muted)">任务完成后自动生成报告，记录从创建任务到完成的完整过程</div>
       </div>
       <select id="mem-filter" onchange="renderMemorials()" style="font-size:11px;padding:4px 10px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;color:var(--text);outline:none">
         <option value="all">全部</option>
@@ -781,14 +781,14 @@
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
       <div style="flex:1">
         <div class="sec-title" style="margin-bottom:2px">📜 旨库 · 圣旨模板</div>
-        <div style="font-size:11px;color:var(--muted)">选择模板、填写参数、一键下旨 — 降低使用门槛，快速启动任务</div>
+        <div style="font-size:11px;color:var(--muted)">选择模板、填写参数、一键创建任务 — 降低使用门槛，快速启动任务</div>
       </div>
     </div>
     <div class="tpl-cats" id="tpl-cats"></div>
     <div class="tpl-grid" id="tpl-grid"></div>
-    <!-- 自由下旨 -->
+    <!-- 自由创建任务 -->
     <div style="margin-top:24px;padding-top:18px;border-top:1px solid var(--line)">
-      <div style="font-size:13px;font-weight:700;margin-bottom:8px">✍️ 自由下旨</div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:8px">✍️ 自由创建任务</div>
       <div style="font-size:11px;color:var(--muted);margin-bottom:10px">无需模板，直接用自然语言描述你的需求，系统会自动派发给协调智能体处理</div>
       <textarea id="free-edict-input" style="width:100%;min-height:80px;resize:vertical;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:13px;color:var(--text);font-family:inherit" placeholder="例如：帮我分析一下最近三个月的销售数据趋势，生成图表和报告…"></textarea>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:10px">
@@ -796,7 +796,7 @@
           <option value="normal">普通优先级</option>
           <option value="high">高优先级</option>
         </select>
-        <button class="tpl-go" style="padding:8px 20px;font-size:13px" onclick="submitFreeEdict()">📜 下旨</button>
+        <button class="tpl-go" style="padding:8px 20px;font-size:13px" onclick="submitFreeEdict()">📜 创建任务</button>
       </div>
     </div>
   </div>
@@ -940,19 +940,19 @@ function restoreGlobalScanState(){
 
 /* ══ PIPELINE DEFINITION ══ */
 const PIPE = [
-  {key:'Inbox',    dept:'皇上',   icon:'👑', action:'下旨'},
-  {key:'Taizi',    dept:'协调智能体',   icon:'🤴', action:'分拣'},
-  {key:'Zhongshu', dept:'规划智能体', icon:'📜', action:'起草'},
-  {key:'Menxia',   dept:'审议智能体', icon:'🔍', action:'审议'},
-  {key:'Assigned', dept:'派发智能体', icon:'📮', action:'派发'},
+  {key:'Inbox',    dept:'用户',   icon:'👑', action:'创建任务'},
+  {key:'Coordinator', dept:'协调智能体', icon:'🎯', action:'分拣'},
+  {key:'Planning',    dept:'规划智能体', icon:'📋', action:'规划'},
+  {key:'Reviewing',   dept:'审议智能体', icon:'🔍', action:'审议'},
+  {key:'Approved',    dept:'派发智能体', icon:'📮', action:'派发'},
   {key:'Doing',    dept:'六部',   icon:'⚙️', action:'执行'},
   {key:'Review',   dept:'派发智能体', icon:'🔎', action:'汇总'},
   {key:'Done',     dept:'回奏',   icon:'✅', action:'完成'},
 ];
-const PIPE_STATE_IDX = {Inbox:0,Pending:0,Taizi:1,Zhongshu:2,Menxia:3,Assigned:4,Doing:5,Review:6,Done:7,Blocked:5,Cancelled:5,Next:4};
+const PIPE_STATE_IDX = {Pending:0,Coordinator:1,Planning:2,Reviewing:3,Approved:4,Dispatching:5,Executing:6,Aggregating:7,Done:8,Blocked:5,Cancelled:5};
 
 /* ══ DEPT COLORS ══ */
-const DEPT_COLOR = {'协调智能体':'#e8a040','规划智能体':'#a07aff','审议智能体':'#6a9eff','派发智能体':'#6aef9a','报告智能体':'#f5c842','评估智能体':'#ff9a6a','审核智能体':'#ff5270','方案生成智能体':'#cc4444','文献检索智能体':'#44aaff','协调智能体':'#9b59b6','皇上':'#ffd700','回奏':'#2ecc8a'};
+const DEPT_COLOR = {'协调智能体':'#e8a040','规划智能体':'#a07aff','审议智能体':'#6a9eff','派发智能体':'#6aef9a','方案生成智能体':'#cc4444','审核智能体':'#ff5270','评估智能体':'#ff9a6a','文献检索智能体':'#44aaff','报告智能体':'#f5c842','用户':'#ffd700'};
 function deptColor(d){return DEPT_COLOR[d]||'#6a9eff'}
 
 /* ══ UTILS ══ */
@@ -960,18 +960,18 @@ const esc=s=>s?String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 async function fetchJ(u){const r=await fetch(u,{cache:'no-store'});if(!r.ok)throw Error(r.status);return r.json()}
 async function postJ(u,d){const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.json()}
 function toast(msg,type='ok',ms=3000){const el=document.createElement('div');el.className=`toast ${type}`;el.textContent=msg;document.getElementById('toaster').appendChild(el);setTimeout(()=>el.remove(),ms)}
-const STATE_LABEL={Inbox:'收件',Pending:'待处理',Taizi:'协调智能体分拣',Zhongshu:'中书起草',Menxia:'门下审议',Assigned:'已派发',Doing:'执行中',Review:'待审查',Done:'已完成',Blocked:'阻塞',Cancelled:'已取消',Next:'待执行'};
+const STATE_LABEL={Pending:'待处理',Coordinator:'协调中',Planning:'规划中',Reviewing:'审议中',Approved:'已批准',Dispatching:'派发中',Executing:'执行中',Aggregating:'汇总中',Done:'已完成',Blocked:'阻塞',Cancelled:'已取消'};
 // 根据轮次动态生成状态标签
 function stateLabel(t){
   const r = t.review_round||0;
-  if(t.state==='Menxia' && r>1) return `门下审议（第${r}轮）`;
-  if(t.state==='Zhongshu' && r>0) return `中书修订（第${r}轮）`;
+  if(t.state==='Reviewing' && r>1) return `审议中（第${r}轮）`;
+  if(t.state==='Planning' && r>0) return `规划修订（第${r}轮）`;
   return STATE_LABEL[t.state]||t.state;
 }
 
 /* ══ TASK CLASSIFICATION ══ */
-// 皇上的旨意：JJC-* 开头，有真实标题
-function isEdict(t){ return /^JJC-/i.test(t.id||'') }
+// 用户的任务：NCA-* 开头，有真实标题
+function isEdict(t){ return /^NCA-/i.test(t.id||'') }
 // 系统会话：OC-* / MC-* 开头
 function isSession(t){ return /^(OC-|MC-)/i.test(t.id||'') }
 // 归档判定：仅检查显式 archived 标记（Done/Cancelled 留在活跃视图，等用户手动归档）
@@ -1017,12 +1017,12 @@ function renderEdicts(tasks){
   else if(edictFilter==='archived') edicts = archivedEdicts;
   else edicts = allEdicts;
   edicts.sort((a,b) => {
-    const order = {Doing:0,Review:1,Assigned:2,Menxia:3,Zhongshu:4,Taizi:5,Inbox:6,Blocked:7,Next:8,Done:9,Cancelled:10};
+    const order = {Executing:0,Aggregating:1,Dispatching:2,Approved:3,Reviewing:4,Planning:5,Coordinator:6,Pending:7,Blocked:8,Done:9,Cancelled:10};
     return (order[a.state]??9) - (order[b.state]??9);
   });
   // Tab badge = active count only
   document.getElementById('tb-e').textContent = activeEdicts.length;
-  document.getElementById('chip-tasks').textContent = activeEdicts.length + ' 道旨意';
+  document.getElementById('chip-tasks').textContent = activeEdicts.length + ' 个任务';
   // Archive stats
   document.getElementById('archive-count').textContent = `活跃 ${activeEdicts.length} · 归档 ${archivedEdicts.length} · 共 ${allEdicts.length}`;
   // Show "一键归档" button if there are un-archived Done/Cancelled tasks
@@ -1030,7 +1030,7 @@ function renderEdicts(tasks){
   document.getElementById('btn-archive-done').style.display = unArchivedDone.length ? '' : 'none';
   const el = document.getElementById('edict-grid');
   if(!edicts.length){
-    el.innerHTML='<div class="empty" style="grid-column:1/-1">暂无旨意<br><small style="font-size:11px;margin-top:6px;display:block;color:var(--muted)">通过飞书向协调智能体发送任务，协调智能体分拣后转规划智能体处理</small></div>';
+    el.innerHTML='<div class="empty" style="grid-column:1/-1">暂无任务<br><small style="font-size:11px;margin-top:6px;display:block;color:var(--muted)">通过飞书向协调智能体发送任务，协调智能体分拣后转规划智能体处理</small></div>';
     return;
   }
   el.innerHTML = edicts.map(t => {
@@ -1187,7 +1187,7 @@ function renderMonitor(tasks){
     {id:'zaochao', label:'报告智能体',emoji:'📰',role:'朝报官',  rank:'正三品'},
   ];
 
-  // 每个部门当前承接的旨意：从 JJC 任务里找 org 匹配且非 Done 的
+  // 每个部门当前承接的任务：从 JJC 任务里找 org 匹配且非 Done 的
   const activeTasks = tasks.filter(t => isEdict(t) && t.state !== 'Done' && t.state !== 'Next');
   // 官员统计数据（如已加载）
   const offMap = {};
@@ -1197,9 +1197,9 @@ function renderMonitor(tasks){
 
   let activeCount = 0;
   const cards = DEPTS.map(d => {
-    // 该部门正在处理的旨意
+    // 该部门正在处理的任务
     const myTasks = activeTasks.filter(t => t.org === d.label);
-    // 也从 flow_log 中找最近参与的旨意
+    // 也从 flow_log 中找最近参与的任务
     const recentEdict = tasks.filter(t=>isEdict(t))
       .find(t=>(t.flow_log||[]).some(f=>f.from===d.label||f.to===d.label));
 
@@ -1238,7 +1238,7 @@ function renderMonitor(tasks){
           </div>`).join('') :
           `<div class="dc-idle">
             <span style="font-size:20px">🪭</span>
-            <span>候命中 ${recentEdict?`· 最近参与 <b style="color:var(--muted)">${esc(recentEdict.id)}</b>`:'· 尚无旨意记录'}</span>
+            <span>候命中 ${recentEdict?`· 最近参与 <b style="color:var(--muted)">${esc(recentEdict.id)}</b>`:'· 尚无任务记录'}</span>
           </div>`}
       </div>
       <div class="dc-footer">
@@ -1304,7 +1304,7 @@ function openTask(id){
       ${canResume ? `<button class="btn-action btn-resume" onclick="taskAction('${esc(t.id)}','resume','恢复执行')">▶️ 恢复执行</button>` : ''}
       ${['Review','Menxia'].includes(t.state) ? `<button class="btn-action" style="background:#2ecc8a22;color:#2ecc8a;border:1px solid #2ecc8a44" onclick="reviewAction('${esc(t.id)}','approve')">✅ 准奏</button>
       <button class="btn-action" style="background:#ff527022;color:#ff5270;border:1px solid #ff527044" onclick="reviewAction('${esc(t.id)}','reject')">🚫 封驳</button>` : ''}
-      ${['Pending','Taizi','Zhongshu','Menxia','Assigned','Doing','Review','Next'].includes(t.state) ? `<button class="btn-action" style="background:#7c5cfc18;color:#7c5cfc;border:1px solid #7c5cfc44" onclick="advanceState('${esc(t.id)}','${esc(t.state)}')">⏩ 推进到下一步</button>` : ''}
+      ${['Pending','Coordinator','Planning','Reviewing','Approved','Dispatching','Executing','Aggregating'].includes(t.state) ? `<button class="btn-action" style="background:#7c5cfc18;color:#7c5cfc;border:1px solid #7c5cfc44" onclick="advanceState('${esc(t.id)}','${esc(t.state)}')">⏩ 推进到下一步</button>` : ''}
     </div>
 
     <!-- 协调智能体调度 -->
@@ -2503,7 +2503,7 @@ function renderOfficials(data){
   // KPI 行
   document.getElementById('off-kpi').innerHTML=`
     <div class="kpi"><div class="kpi-v blue">${offs.length}</div><div class="kpi-l">在职官员</div></div>
-    <div class="kpi"><div class="kpi-v gold">${totals.tasks_done||0}</div><div class="kpi-l">累计完成旨意</div></div>
+    <div class="kpi"><div class="kpi-v gold">${totals.tasks_done||0}</div><div class="kpi-l">累计完成任务</div></div>
     <div class="kpi"><div class="kpi-v ${(totals.cost_cny||0)>20?'warn':'green'}">¥${totals.cost_cny||0}</div><div class="kpi-l">累计费用（含缓存）</div></div>
     <div class="kpi"><div class="kpi-v" style="font-size:16px;padding-top:4px">${esc(data.top_official||'—')}</div><div class="kpi-l">功绩最高</div></div>`;
 
@@ -2567,7 +2567,7 @@ function selectOfficial(id, el){
     <div class="od-section">
       <div class="od-sec-title">功绩统计</div>
       <div class="od-stats">
-        <div class="ods"><div class="ods-v" style="color:var(--ok)">${o.tasks_done}</div><div class="ods-l">完成旨意</div></div>
+        <div class="ods"><div class="ods-v" style="color:var(--ok)">${o.tasks_done}</div><div class="ods-l">完成任务</div></div>
         <div class="ods"><div class="ods-v" style="color:var(--warn)">${o.tasks_active}</div><div class="ods-l">执行中</div></div>
         <div class="ods"><div class="ods-v" style="color:var(--acc)">${o.flow_participations}</div><div class="ods-l">流转参与</div></div>
       </div>
@@ -2593,11 +2593,11 @@ function selectOfficial(id, el){
       </div>
     </div>
 
-    <!-- 参与旨意 -->
+    <!-- 参与任务 -->
     <div class="od-section">
-      <div class="od-sec-title">参与旨意（${edicts.length} 道）</div>
+      <div class="od-sec-title">参与任务（${edicts.length} 道）</div>
       ${!edicts.length
-        ? '<div style="font-size:12px;color:var(--muted);padding:8px 0">暂无旨意记录</div>'
+        ? '<div style="font-size:12px;color:var(--muted);padding:8px 0">暂无任务记录</div>'
         : `<div class="od-edict-list">${edicts.map(e=>`
           <div class="oe-item" onclick='openTask(${JSON.stringify(e.id)})'>
             <span class="oe-id">${esc(e.id)}</span>
@@ -2675,10 +2675,10 @@ async function unarchiveTask(taskId){
   }catch(e){ toast('服务器连接失败','err'); }
 }
 async function archiveAllDone(){
-  if(!confirm('将所有已完成/已取消的旨意移入归档？')) return;
+  if(!confirm('将所有已完成/已取消的任务移入归档？')) return;
   try{
     const r = await postJ(API+'/archive-task', {archiveAllDone: true});
-    if(r.ok){ toast(`📦 ${r.count||0} 道旨意已归档`,'ok'); loadAll(); }
+    if(r.ok){ toast(`📦 ${r.count||0} 个任务已归档`,'ok'); loadAll(); }
     else toast(r.error||'批量归档失败','err');
   }catch(e){ toast('服务器连接失败','err'); }
 }
@@ -2847,7 +2847,7 @@ function showCeremony(){
   el.style.display='flex';
   // Fill data from live status
   const tasks = liveStatus ? (liveStatus.tasks||[]) : [];
-  const jjc = tasks.filter(t=>(t.id||'').startsWith('JJC-'));
+  const jjc = tasks.filter(t=>(t.id||'').startsWith('NCA-'));
   const pending = jjc.filter(t=>!['Done','Cancelled'].includes(t.state)).length;
   const done = jjc.filter(t=>t.state==='Done').length;
   const overdue = jjc.filter(t=>t.state!=='Done'&&t.state!=='Cancelled'&&t.eta&&new Date(t.eta.replace(' ','T'))<new Date()).length;
@@ -2871,17 +2871,17 @@ function skipCeremony(){
   setTimeout(()=>{el.style.display='none'}, 500);
 }
 
-/* ══ MEMORIALS (奏折系统) ══ */
+/* ══ MEMORIALS (报告系统) ══ */
 function renderMemorials(){
   const tasks = liveStatus ? (liveStatus.tasks||[]) : [];
   const filter = (document.getElementById('mem-filter')||{}).value || 'all';
   // Only JJC edicts that are Done or Cancelled
-  let mems = tasks.filter(t=>(t.id||'').startsWith('JJC-') && ['Done','Cancelled'].includes(t.state));
+  let mems = tasks.filter(t=>(t.id||'').startsWith('NCA-') && ['Done','Cancelled'].includes(t.state));
   if(filter!=='all') mems = mems.filter(t=>t.state===filter);
   document.getElementById('tb-mem').textContent = mems.length;
 
   const el = document.getElementById('mem-list');
-  if(!mems.length){ el.innerHTML='<div class="mem-empty">暂无奏折 — 任务完成后自动生成</div>'; return; }
+  if(!mems.length){ el.innerHTML='<div class="mem-empty">暂无报告 — 任务完成后自动生成</div>'; return; }
 
   el.innerHTML = mems.map(t=>{
     const fl = t.flow_log||[];
@@ -2966,7 +2966,7 @@ function openMemorial(jsonStr){
     </div>`:''}
 
     <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end">
-      <button class="btn btn-g" onclick="exportMemorial(${JSON.stringify(JSON.stringify(t.id))})" style="font-size:12px;padding:6px 16px">📋 复制奏折</button>
+      <button class="btn btn-g" onclick="exportMemorial(${JSON.stringify(JSON.stringify(t.id))})" style="font-size:12px;padding:6px 16px">📋 复制报告</button>
     </div>
   `;
   document.getElementById('modal-bg').classList.add('open');
@@ -2978,7 +2978,7 @@ function exportMemorial(taskIdJson){
   const t = tasks.find(x=>x.id===taskId);
   if(!t){ toast('找不到任务','err'); return; }
   const fl = t.flow_log||[];
-  let md = `# 📜 奏折 · ${t.title}\n\n`;
+  let md = `# 📜 报告 · ${t.title}\n\n`;
   md += `- **任务编号**: ${t.id}\n`;
   md += `- **状态**: ${t.state}\n`;
   md += `- **负责部门**: ${t.org}\n`;
@@ -3003,7 +3003,7 @@ function exportMemorial(taskIdJson){
     md += `- **${f.from}** → **${f.to}**  \n  ${f.remark}  \n  _${(f.at||'').substring(0,19)}_\n\n`;
   }
   if(t.output && t.output!=='-') md += `## 产出物\n\n\`${t.output}\`\n`;
-  navigator.clipboard.writeText(md).then(()=>toast('✅ 奏折已复制为 Markdown','ok')).catch(()=>toast('复制失败','err'));
+  navigator.clipboard.writeText(md).then(()=>toast('✅ 报告已复制为 Markdown','ok')).catch(()=>toast('复制失败','err'));
 }
 
 /* ══ TEMPLATES (圣旨模板库) ══ */
@@ -3117,7 +3117,7 @@ function renderTemplates(){
       <div class="tpl-footer">
         ${t.depts.map(d=>`<span class="tpl-dept">${esc(d)}</span>`).join('')}
         <span class="tpl-est">${esc(t.est)} · ${esc(t.cost)}</span>
-        <button class="tpl-go" onclick="openTemplateForm('${t.id}')">下旨</button>
+        <button class="tpl-go" onclick="openTemplateForm('${t.id}')">创建任务</button>
       </div>
     </div>
   `).join('');
@@ -3143,8 +3143,8 @@ function openTemplateForm(tplId){
       </div>`).join('')}
       <div id="tpl-preview" style="background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:14px;font-size:12px;color:var(--muted);display:none"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button type="button" class="btn btn-g" onclick="previewTemplate('${t.id}')" style="padding:8px 16px;font-size:12px">👁 预览旨意</button>
-        <button type="submit" class="tpl-go" style="padding:8px 20px;font-size:13px">📜 下旨</button>
+        <button type="button" class="btn btn-g" onclick="previewTemplate('${t.id}')" style="padding:8px 16px;font-size:12px">👁 预览任务</button>
+        <button type="submit" class="tpl-go" style="padding:8px 20px;font-size:13px">📜 创建任务</button>
       </div>
     </form>
   `;
@@ -3167,7 +3167,7 @@ function previewTemplate(tplId){
   const cmd = buildCommand(tplId);
   const el = document.getElementById('tpl-preview');
   el.style.display='block';
-  el.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:6px">📜 将发送给规划智能体的旨意：</div><div style="white-space:pre-wrap;line-height:1.6">${esc(cmd)}</div>`;
+  el.innerHTML = `<div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:6px">📜 将发送给规划智能体的任务：</div><div style="white-space:pre-wrap;line-height:1.6">${esc(cmd)}</div>`;
 }
 
 async function executeTemplate(e, tplId){
@@ -3186,7 +3186,7 @@ async function executeTemplate(e, tplId){
   }catch(ex){/* 检测失败不阻塞创建 */}
 
   // Show the generated command in a confirmation
-  if(!confirm(`确认下旨？\n\n${cmd.substring(0,200)}${cmd.length>200?'…':''}`)) return;
+  if(!confirm(`确认创建任务？\n\n${cmd.substring(0,200)}${cmd.length>200?'…':''}`)) return;
   // 通过 API 创建真实任务
   try{
     const params = {};
@@ -3203,11 +3203,11 @@ async function executeTemplate(e, tplId){
       params: params,
     });
     if(r.ok){
-      toast(`📜 ${r.taskId} 旨意已下达`, 'ok', 5000);
+      toast(`📜 ${r.taskId} 任务已下达`, 'ok', 5000);
       closeModal();
       loadAll();
     } else {
-      toast(r.error||'下旨失败','err');
+      toast(r.error||'创建任务失败','err');
     }
   }catch(err){
     // 降级：复制到剪贴板
@@ -3256,8 +3256,8 @@ async function loadTaskOutput(taskId){
 async function submitFreeEdict(){
   const input = document.getElementById('free-edict-input');
   const text = (input.value||'').trim();
-  if(!text || text.length < 6){ toast('请输入至少6个字的旨意内容','err'); return; }
-  if(!confirm('确认下旨？\n\n'+text.substring(0,200)+(text.length>200?'…':''))) return;
+  if(!text || text.length < 6){ toast('请输入至少6个字的任务内容','err'); return; }
+  if(!confirm('确认创建任务？\n\n'+text.substring(0,200)+(text.length>200?'…':''))) return;
   const priority = document.getElementById('free-edict-priority').value;
   try{
     const r = await postJ(API+'/create-task', {
@@ -3268,11 +3268,11 @@ async function submitFreeEdict(){
       params: { content: text },
     });
     if(r.ok){
-      toast('📜 '+r.taskId+' 旨意已下达','ok',5000);
+      toast('📜 '+r.taskId+' 任务已下达','ok',5000);
       input.value = '';
       loadAll();
     } else {
-      toast(r.error||'下旨失败','err');
+      toast(r.error||'创建任务失败','err');
     }
   }catch(err){
     toast('服务器连接失败','err');
