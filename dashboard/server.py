@@ -803,6 +803,24 @@ def get_default_officials_stats():
         "top_official": None,
     }
 
+def get_default_live_status():
+    """返回默认的实时状态数据（当 live_status.json 不存在或为空时使用）"""
+    return {
+        "generatedAt": datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "taskSource": "tasks_source.json",
+        "officials": [],
+        "tasks": [],
+        "history": [],
+        "metrics": {
+            "officialCount": 9,
+            "todayDone": 0,
+            "totalDone": 0,
+            "inProgress": 0,
+            "blocked": 0
+        },
+        "syncStatus": {"ok": True, "message": "系统已就绪"},
+    }
+
 
 def _check_gateway_alive():
     """检测 Gateway 是否在运行。
@@ -2282,7 +2300,10 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({'status': 'ok' if all_ok else 'degraded', 'ts': now_iso(), 'checks': checks})
         elif p == '/api/live-status':
             task_data_dir = get_task_data_dir()
-            self.send_json(read_json(task_data_dir / 'live_status.json'))
+            live = read_json(task_data_dir / 'live_status.json', {})
+            if not live or not live.get('tasks'):
+                live = get_default_live_status()
+            self.send_json(live)
         elif p == '/api/agent-config':
             cfg = read_json(DATA / 'agent_config.json', {})
             if not cfg or not cfg.get('agents'):
