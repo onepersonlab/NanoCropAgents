@@ -190,7 +190,7 @@ bash install.sh
 
 ## 相关项目
 
-- [OpenClaw](https://github.com/openclaw/openclaw) - 多智能体框架
+- [OPMALab](https://github.com/onepersonlab/OPMALab) - 实验室主项目
 - [GeneClaw](https://github.com/onepersonlab/GeneClaw) - 基因分析多智能体系统
 
 ---
