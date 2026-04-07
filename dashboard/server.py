@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 NanoCropAgents · 看板本地 API 服务器
-Port: 7891 (可通过 --port 修改)
+Port: 7999 (可通过 --port 修改)
 
 Endpoints:
   GET  /                       → dashboard.html
@@ -40,9 +40,9 @@ from channels import get_channel, get_channel_info, CHANNELS as NOTIFICATION_CHA
 OCLAW_HOME = pathlib.Path.home() / '.openclaw'
 MAX_REQUEST_BODY = 1 * 1024 * 1024  # 1 MB
 ALLOWED_ORIGIN = None  # Set via --cors; None means restrict to localhost
-_DASHBOARD_PORT = 7891  # Updated at startup from --port arg
+_DASHBOARD_PORT = 7999  # Updated at startup from --port arg
 _DEFAULT_ORIGINS = {
-    'http://127.0.0.1:7891', 'http://localhost:7891',
+    'http://127.0.0.1:7999', 'http://localhost:7999',
     'http://127.0.0.1:5173', 'http://localhost:5173',  # Vite dev server
 }
 _SAFE_NAME_RE = re.compile(r'^[a-zA-Z0-9_\-\u4e00-\u9fff]+$')
@@ -2665,7 +2665,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     parser = argparse.ArgumentParser(description='NanoCropAgents看板服务器')
-    parser.add_argument('--port', type=int, default=7891)
+    parser.add_argument('--port', type=int, default=7999)
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--cors', default=None, help='Allowed CORS origin (default: reflect request Origin header)')
     args = parser.parse_args()
