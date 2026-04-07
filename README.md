@@ -144,6 +144,19 @@ cd NanoCropAgents
 bash install.sh
 ```
 
+### 启动看板
+
+```bash
+# 启动看板服务器
+python3 dashboard/server.py
+
+# 访问看板
+# http://127.0.0.1:7999
+
+# 或指定其他端口
+python3 dashboard/server.py --port 8888
+```
+
 ### 使用示例
 
 ```
