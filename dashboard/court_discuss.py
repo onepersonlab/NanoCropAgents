@@ -1,15 +1,14 @@
 """
-朝堂议政引擎 — 多官员实时讨论系统
+朝堂议政引擎 — 多智能体实时讨论系统
 
-灵感来源于 nvwa 项目的 group_chat + crew_engine
-将官员可视化 + 实时讨论 + 用户（皇帝）参与融合到三省六部
+用于 NanoCropAgents 九大智能体协同讨论纳米作物处理方案。
 
 功能:
-  - 选择官员参与议政
-  - 围绕旨意/议题进行多轮群聊讨论
-  - 皇帝可随时发言、下旨干预（天命降临）
+  - 选择智能体参与议政
+  - 围绕议题进行多轮群聊讨论
+  - 用户可随时发言、干预
   - 命运骰子：随机事件
-  - 每个官员保持自己的角色性格和说话风格
+  - 每个智能体保持自己的角色性格和说话风格
 """
 from __future__ import annotations
 
@@ -21,90 +20,83 @@ import uuid
 
 logger = logging.getLogger('court_discuss')
 
-# ── 官员角色设定 ──
+# ── 九大智能体角色设定 ──
 
 OFFICIAL_PROFILES = {
-    'taizi': {
-        'name': '太子', 'emoji': '🤴', 'role': '储君',
-        'duty': '消息分拣与需求提炼。判断事务轻重缓急，简单事直接处置，重大事务提炼需求转交中书省。代皇帝巡视各部进展。',
-        'personality': '年轻有为、锐意进取，偶尔冲动但善于学习。说话干脆利落，喜欢用现代化的比喻。',
-        'speaking_style': '简洁有力，经常用"本宫以为"开头，偶尔蹦出网络用语。'
+    'coordinator': {
+        'name': '协调智能体', 'emoji': '🎯', 'role': '入口层',
+        'duty': '消息分拣与需求提炼。判断用户意图，简单问题直接处置，复杂任务提炼需求转交规划智能体。',
+        'personality': '冷静理性，善于判断任务优先级。说话简洁有力。',
+        'speaking_style': '简洁清晰，常用"经分析"开头，直接给出判断结果。'
     },
-    'zhongshu': {
-        'name': '中书令', 'emoji': '📜', 'role': '正一品·中书省',
-        'duty': '方案规划与流程驱动。接收旨意后起草执行方案，提交门下省审议，通过后转尚书省执行。只规划不执行，方案需简明扼要。',
-        'personality': '老成持重，擅长规划，总能提出系统性方案。话多但有条理。',
-        'speaking_style': '喜欢列点论述，常说"臣以为需从三方面考量"。引经据典。'
+    'planner': {
+        'name': '规划智能体', 'emoji': '📋', 'role': '决策层',
+        'duty': '方案规划与流程驱动。接收需求后起草纳米处理方案，定义优化目标和约束条件，提交审议智能体审核。',
+        'personality': '系统思维强，擅长多目标优化。总能提出系统性方案。',
+        'speaking_style': '喜欢列点论述，常说"本智能体建议从三方面考量"。引用文献数据。'
     },
-    'menxia': {
-        'name': '侍中', 'emoji': '🔍', 'role': '正一品·门下省',
-        'duty': '方案审议与把关。从可行性、完整性、风险、资源四维度审核方案，有权封驳退回。发现漏洞必须指出，建议必须具体。',
-        'personality': '严谨挑剔，眼光犀利，善于找漏洞。是天生的审查官，但也很公正。',
-        'speaking_style': '喜欢反问，"陛下容禀，此处有三点疑虑"。对不完善的方案会直言不讳。'
+    'reviewer': {
+        'name': '审议智能体', 'emoji': '🔍', 'role': '决策层',
+        'duty': '方案审议与把关。从可行性、安全性、合规性、资源四维度审核方案，有权封驳退回。发现风险必须指出。',
+        'personality': '严谨挑剔，眼光犀利，善于发现潜在风险。是天生的审查官。',
+        'speaking_style': '喜欢反问，"此处有三点疑虑需要澄清"。对高风险方案会直言不讳。'
     },
-    'shangshu': {
-        'name': '尚书令', 'emoji': '📮', 'role': '正一品·尚书省',
-        'duty': '任务派发与执行协调。接收准奏方案后判断归属哪个部门，分发给六部执行，汇总结果回报。相当于任务分发中心。',
-        'personality': '执行力强，务实干练，关注可行性和资源分配。',
-        'speaking_style': '直来直去，"臣来安排"、"交由某部办理"。重效率轻虚文。'
+    'dispatcher': {
+        'name': '派发智能体', 'emoji': '📮', 'role': '决策层',
+        'duty': '任务派发与执行协调。接收准奏方案后判断归属哪个执行智能体，分发给执行层处理，汇总结果回报。',
+        'personality': '执行力强，务实干练，关注并行效率和资源分配。',
+        'speaking_style': '直来直去，"开始派发执行"、"交由方案生成智能体处理"。重效率。'
     },
-    'libu': {
-        'name': '礼部尚书', 'emoji': '📝', 'role': '正二品·礼部',
-        'duty': '文档规范与对外沟通。负责撰写文档、用户指南、变更日志；制定输出规范和模板；审查UI/UX文案；草拟公告、Release Notes。',
-        'personality': '文采飞扬，注重规范和形式，擅长文档和汇报。有点强迫症。',
-        'speaking_style': '措辞优美，"臣斗胆建议"，喜欢用排比和对仗。'
+    'generator': {
+        'name': '方案生成智能体', 'emoji': '🔧', 'role': '执行层',
+        'duty': '生成候选纳米处理方案。根据目标在纳米材料和处理参数空间中搜索可行方案，输出候选列表。',
+        'personality': '创造性思维强，善于探索新材料和新参数组合。技术导向。',
+        'speaking_style': '喜欢展示方案细节，"生成候选方案如下：TiO2浓度0.05%、SiO2纳米颗粒…"。'
     },
-    'hubu': {
-        'name': '户部尚书', 'emoji': '💰', 'role': '正二品·户部',
-        'duty': '数据统计与资源管理。负责数据收集/清洗/聚合/可视化；Token用量统计、性能指标计算、成本分析；CSV/JSON报表生成；文件组织与配置管理。',
-        'personality': '精打细算，对预算和资源极其敏感。总想省钱但也识大局。',
-        'speaking_style': '言必及成本，"这个预算嘛……"，经常算账。'
+    'auditor': {
+        'name': '审核智能体', 'emoji': '⚖️', 'role': '执行层',
+        'duty': '约束审核。检查方案是否符合安全约束、材料毒性限值、环境合规要求。识别OOD风险。',
+        'personality': '严明公正，重视规则和底线。善于安全评估。',
+        'speaking_style': '逻辑严密，"依约束规则，此方案存在毒性超标风险"。'
     },
-    'bingbu': {
-        'name': '兵部尚书', 'emoji': '⚔️', 'role': '正二品·兵部',
-        'duty': '基础设施与运维保障。负责服务器管理、进程守护、日志排查；CI/CD、容器编排、灰度发布、回滚策略；性能监控；防火墙、权限管控、漏洞扫描。',
-        'personality': '雷厉风行，危机意识强，重视安全和应急。说话带军人气质。',
-        'speaking_style': '干脆果断，"末将建议立即执行"、"兵贵神速"。'
+    'evaluator': {
+        'name': '评估智能体', 'emoji': '📊', 'role': '执行层',
+        'duty': '指标预测。调用代理模型预测方案的萌发率、生长速度、产量等6个关键指标。',
+        'personality': '数据驱动，擅长定量分析。对预测精度有执念。',
+        'speaking_style': '言必及数据，"代理模型预测结果：萌发率提升15.2%…"。'
     },
-    'xingbu': {
-        'name': '刑部尚书', 'emoji': '⚖️', 'role': '正二品·刑部',
-        'duty': '质量保障与合规审计。负责代码审查（逻辑正确性、边界条件、异常处理）；编写测试、覆盖率分析；Bug定位与根因分析；权限检查、敏感信息排查。',
-        'personality': '严明公正，重视规则和底线。善于质量把控和风险评估。',
-        'speaking_style': '逻辑严密，"依律当如此"、"需审慎考量风险"。'
+    'retriever': {
+        'name': '文献检索智能体', 'emoji': '📚', 'role': '执行层',
+        'duty': '证据检索。从PubMed、CNKI、WoS等数据库检索相关文献，提取支撑证据和反面案例。',
+        'personality': '知识渊博，善于文献综述。总能找到关键参考。',
+        'speaking_style': '常引用文献，"根据Zhang et al. 2024的研究…"。'
     },
-    'gongbu': {
-        'name': '工部尚书', 'emoji': '🔧', 'role': '正二品·工部',
-        'duty': '工程实现与架构设计。负责需求分析、方案设计、代码实现、接口对接；模块划分、数据结构/API设计；代码重构、性能优化、技术债清偿；脚本与自动化工具。',
-        'personality': '技术宅，动手能力强，喜欢谈实现细节。偶尔社恐但一说到技术就滔滔不绝。',
-        'speaking_style': '喜欢说技术术语，"从技术角度来看"、"这个架构建议用……"。'
-    },
-    'libu_hr': {
-        'name': '吏部尚书', 'emoji': '👔', 'role': '正二品·吏部',
-        'duty': '人事管理与团队建设。负责新成员（Agent）评估接入、能力测试；Skill编写与Prompt调优、知识库维护；输出质量评分、效率分析；协作规范制定。',
-        'personality': '知人善任，擅长人员安排和组织协调。八面玲珑但有原则。',
-        'speaking_style': '关注人的因素，"此事需考虑各部人手"、"建议由某某负责"。'
+    'reporter': {
+        'name': '报告智能体', 'emoji': '📈', 'role': '执行层',
+        'duty': '结果整理。汇总各执行智能体的输出，生成最终报告，回传协调智能体。',
+        'personality': '善于总结归纳，关注报告完整性和可读性。',
+        'speaking_style': '喜欢结构化输出，"汇总报告如下：一、候选方案；二、预测指标；三、文献证据…"。'
     },
 }
 
-# ── 命运骰子事件（古风版）──
+# ── 命运骰子事件（科研场景）──
 
 FATE_EVENTS = [
-    '八百里加急：边疆战报传来，所有人必须讨论应急方案',
-    '钦天监急报：天象异常，太史公占卜后建议暂缓此事',
-    '新科状元觐见，带来了意想不到的新视角',
-    '匿名奏折揭露了计划中一个被忽视的重大漏洞',
-    '户部清点发现国库余银比预期多一倍，可以加大投入',
-    '一位告老还乡的前朝元老突然上书，分享前车之鉴',
-    '民间舆论突变，百姓对此事态度出现180度转折',
-    '邻国使节来访，带来了合作机遇也带来了竞争压力',
-    '太后懿旨：要求优先考虑民生影响',
-    '暴雨连日，多地受灾，资源需重新调配',
-    '发现前朝古籍中竟有类似问题的解决方案',
-    '翰林院提出了一个大胆的替代方案，令人耳目一新',
-    '各部积压的旧案突然需要一起处理，人手紧张',
-    '皇帝做了一个意味深长的梦，暗示了一个全新的方向',
-    '突然有人拿出了竞争对手的情报，局面瞬间改变',
-    '一场意外让所有人不得不在半天内拿出结论',
+    '实验意外：某纳米材料组合出现未预期反应，需紧急评估风险',
+    '文献突破：新发表的高影响因子论文提供了关键理论支撑',
+    '设备故障：代理模型预测服务暂时不可用，需等待恢复',
+    '政策变动：纳米材料安全标准更新，部分方案需重新审核',
+    '数据异常：历史实验数据中发现噪声，需清洗后重预测',
+    '跨学科合作：材料科学专家提出新的纳米载体建议',
+    '环境突变：气候模型预测干旱风险增加，需调整方案韧性',
+    '竞品动态：竞争对手发布了类似技术，需评估差异化优势',
+    '资金变化：项目预算调整，高成本方案需重新评估',
+    '时间压力：用户要求在48小时内出结果，需加速流程',
+    '新材料发现：实验室合成了新型纳米颗粒，性能优于预期',
+    '负面反馈：早期测试对象报告了轻微不良反应',
+    '文献矛盾：两篇高质量研究结论相左，需进一步考证',
+    '技术债务：代码库发现历史bug，影响预测准确性',
+    '供应链波动：关键纳米材料供应商产能受限',
 ]
 
 # ── Session 管理 ──
@@ -113,7 +105,7 @@ _sessions: dict[str, dict] = {}
 
 
 def create_session(topic: str, official_ids: list[str], task_id: str = '') -> dict:
-    """创建新的朝堂议政会话。"""
+    """创建新的议政会话。"""
     session_id = str(uuid.uuid4())[:8]
 
     officials = []
@@ -123,7 +115,7 @@ def create_session(topic: str, official_ids: list[str], task_id: str = '') -> di
             officials.append({**profile, 'id': oid})
 
     if not officials:
-        return {'ok': False, 'error': '至少选择一位官员'}
+        return {'ok': False, 'error': '至少选择一位智能体'}
 
     session = {
         'session_id': session_id,
@@ -132,7 +124,7 @@ def create_session(topic: str, official_ids: list[str], task_id: str = '') -> di
         'officials': officials,
         'messages': [{
             'type': 'system',
-            'content': f'🏛 朝堂议政开始 —— 议题：{topic}',
+            'content': f'🔬 智能体议政开始 —— 议题：{topic}',
             'timestamp': time.time(),
         }],
         'round': 0,
@@ -154,15 +146,15 @@ def advance_discussion(session_id: str, user_message: str = None,
     session['round'] += 1
     round_num = session['round']
 
-    # 记录皇帝发言
+    # 记录用户发言
     if user_message:
         session['messages'].append({
-            'type': 'emperor',
+            'type': 'user',
             'content': user_message,
             'timestamp': time.time(),
         })
 
-    # 记录天命降临
+    # 记录干预指令
     if decree:
         session['messages'].append({
             'type': 'decree',
@@ -184,9 +176,9 @@ def advance_discussion(session_id: str, user_message: str = None,
     # 添加到历史
     for msg in new_messages:
         session['messages'].append({
-            'type': 'official',
-            'official_id': msg.get('official_id', ''),
-            'official_name': msg.get('name', ''),
+            'type': 'agent',
+            'agent_id': msg.get('agent_id', ''),
+            'agent_name': msg.get('name', ''),
             'content': msg.get('content', ''),
             'emotion': msg.get('emotion', 'neutral'),
             'action': msg.get('action'),
@@ -229,17 +221,17 @@ def conclude_session(session_id: str) -> dict:
     summary = _llm_summarize(session)
     if not summary:
         # 降级到简单统计
-        official_msgs = [m for m in session['messages'] if m['type'] == 'official']
+        agent_msgs = [m for m in session['messages'] if m['type'] == 'agent']
         by_name = {}
-        for m in official_msgs:
-            name = m.get('official_name', '?')
+        for m in agent_msgs:
+            name = m.get('agent_name', '?')
             by_name[name] = by_name.get(name, 0) + 1
         parts = [f"{n}发言{c}次" for n, c in by_name.items()]
         summary = f"历经{session['round']}轮讨论，{'、'.join(parts)}。议题待后续落实。"
 
     session['messages'].append({
         'type': 'system',
-        'content': f'📋 朝堂议政结束 —— {summary}',
+        'content': f'📋 智能体议政结束 —— {summary}',
         'timestamp': time.time(),
     })
     session['summary'] = summary
@@ -259,7 +251,7 @@ def list_sessions() -> list[dict]:
             'topic': s['topic'],
             'round': s['round'],
             'phase': s['phase'],
-            'official_count': len(s['officials']),
+            'agent_count': len(s['officials']),
             'message_count': len(s['messages']),
         }
         for s in _sessions.values()
@@ -477,7 +469,7 @@ def _llm_complete(system_prompt: str, user_prompt: str, max_tokens: int = 1024) 
 
 
 def _llm_discuss(session: dict, user_message: str = None, decree: str = None) -> dict | None:
-    """使用 LLM 生成多官员讨论。"""
+    """使用 LLM 生成多智能体讨论。"""
     officials = session['officials']
     names = '、'.join(o['name'] for o in officials)
 
@@ -493,30 +485,30 @@ def _llm_discuss(session: dict, user_message: str = None, decree: str = None) ->
     for msg in session['messages'][-20:]:
         if msg['type'] == 'system':
             history += f"\n【系统】{msg['content']}\n"
-        elif msg['type'] == 'emperor':
-            history += f"\n皇帝：{msg['content']}\n"
+        elif msg['type'] == 'user':
+            history += f"\n用户：{msg['content']}\n"
         elif msg['type'] == 'decree':
-            history += f"\n【天命降临】{msg['content']}\n"
-        elif msg['type'] == 'official':
-            history += f"\n{msg.get('official_name', '?')}：{msg['content']}\n"
+            history += f"\n【干预指令】{msg['content']}\n"
+        elif msg['type'] == 'agent':
+            history += f"\n{msg.get('agent_name', '?')}：{msg['content']}\n"
         elif msg['type'] == 'scene_note':
             history += f"\n（{msg['content']}）\n"
 
     if user_message:
-        history += f"\n皇帝：{user_message}\n"
+        history += f"\n用户：{user_message}\n"
     if decree:
-        history += f"\n【天命降临——上帝视角干预】{decree}\n"
+        history += f"\n【干预指令】{decree}\n"
 
     decree_section = ''
     if decree:
-        decree_section = '\n请根据天命降临事件改变讨论走向，所有官员都必须对此做出反应。\n'
+        decree_section = '\n请根据干预指令改变讨论走向，所有智能体都必须对此做出反应。\n'
 
-    prompt = f"""你是一个古代朝堂多角色群聊模拟器。模拟多位官员在朝堂上围绕议题的讨论。
+    prompt = f"""你是一个多智能体群聊模拟器。模拟多位智能体围绕纳米作物处理方案的讨论。
 
-## 参与官员
+## 参与智能体
 {names}
 
-## 角色设定（每位官员都有明确的职责领域，必须从自身专业角度出发讨论）
+## 角色设定（每位智能体都有明确的职责领域，必须从自身专业角度出发讨论）
 {profiles}
 
 ## 当前议题
@@ -526,28 +518,28 @@ def _llm_discuss(session: dict, user_message: str = None, decree: str = None) ->
 {history if history else '（讨论刚刚开始）'}
 {decree_section}
 ## 任务
-生成每位官员的下一条发言。要求：
-1. 每位官员说1-3句话，像真实朝堂讨论一样
-2. **每位官员必须从自己的职责领域出发发言**——户部谈成本和数据、兵部谈安全和运维、工部谈技术实现、刑部谈质量和合规、礼部谈文档和规范、吏部谈人员安排、中书谈规划方案、门下谈审查风险、尚书谈执行调度、太子谈创新和大局，每个人关注的焦点不同
-3. 官员之间要有互动——回应、反驳、支持、补充，尤其是不同部门的视角碰撞
-4. 保持每位官员独特的说话风格和人格特征
+生成每位智能体的下一条发言。要求：
+1. 每位智能体说1-3句话，像真实团队讨论一样
+2. **每位智能体必须从自己的职责领域出发发言**——协调者谈任务分拣、规划者谈方案设计、审议者谈风险审核、派发者谈任务调度、方案生成者谈候选方案、审核者谈约束合规、评估者谈指标预测、文献检索者谈证据支撑、报告者谈结果汇总
+3. 智能体之间要有互动——回应、反驳、支持、补充，尤其是不同层级的视角碰撞
+4. 保持每位智能体独特的说话风格和人格特征
 5. 讨论要围绕议题推进、有实质性观点，不要泛泛而谈
-6. 如果皇帝发言了，官员要恰当回应（但不要阿谀）
-7. 可包含动作描写用*号*包裹（如 *拱手施礼*）
+6. 如果用户发言了，智能体要恰当回应
+7. 可包含动作描写用*号*包裹（如 *查阅文献数据库*）
 
 输出JSON格式：
 {{
   "messages": [
-    {{"official_id": "zhongshu", "name": "中书令", "content": "发言内容", "emotion": "neutral|confident|worried|angry|thinking|amused", "action": "可选动作描写"}},
+    {{agent_id": "planner", "name": "规划智能体", "content": "发言内容", "emotion": "neutral|confident|worried|thinking", "action": "可选动作描写"}},
     ...
   ],
-  "scene_note": "可选的朝堂氛围变化（如：朝堂一片哗然|群臣窃窃私语），没有则为null"
+  "scene_note": "可选的讨论氛围变化（如：讨论进入关键决策阶段），没有则为null"
 }}
 
 只输出JSON，不要其他内容。"""
 
     content = _llm_complete(
-        '你是一个古代朝堂群聊模拟器，严格输出JSON格式。',
+        '你是一个多智能体群聊模拟器，严格输出JSON格式。',
         prompt,
         max_tokens=1500,
     )
@@ -570,78 +562,73 @@ def _llm_discuss(session: dict, user_message: str = None, decree: str = None) ->
 
 def _llm_summarize(session: dict) -> str | None:
     """用 LLM 总结讨论结果。"""
-    official_msgs = [m for m in session['messages'] if m['type'] == 'official']
+    agent_msgs = [m for m in session['messages'] if m['type'] == 'agent']
     topic = session['topic']
 
-    if not official_msgs:
+    if not agent_msgs:
         return None
 
     dialogue = '\n'.join(
-        f"{m.get('official_name', '?')}：{m['content']}"
-        for m in official_msgs[-30:]
+        f"{m.get('agent_name', '?')}：{m['content']}"
+        for m in agent_msgs[-30:]
     )
 
-    prompt = f"""以下是朝堂官员围绕「{topic}」的讨论记录：
+    prompt = f"""以下是智能体围绕「{topic}」的讨论记录：
 
 {dialogue}
 
-请用2-3句话总结讨论结果、达成的共识和待决事项。用古风但简明的风格。"""
+请用2-3句话总结讨论结果、达成的共识和待决事项。用简明专业风格。"""
 
-    return _llm_complete('你是朝堂记录官，负责总结朝议结果。', prompt, max_tokens=300)
+    return _llm_complete('你是讨论记录官，负责总结议政结果。', prompt, max_tokens=300)
 
 
 # ── 规则模拟（无 LLM 时的降级方案）──
 
 _SIMULATED_RESPONSES = {
-    'zhongshu': [
-        '臣以为此事需从全局着眼，分三步推进：先调研、再制定方案、最后交六部执行。',
-        '参考前朝经验，臣建议先出一个详细的规划文档，提交门下省审阅后再定。',
-        '*展开手中卷轴* 臣已拟好初步方案，待侍中审议、尚书省分派执行。',
+    'coordinator': [
+        '经分析，此任务涉及纳米材料方案优化，建议转交规划智能体设计方案。',
+        '任务分拣完成。复杂度评级：中等。优先级：高。准备派发给规划智能体。',
+        '*检查任务队列* 当前有3个待处理任务，建议按优先级排序处理。',
     ],
-    'menxia': [
-        '臣有几点疑虑：方案的风险评估似乎还不够充分，可行性存疑。',
-        '容臣直言，此方案完整性不足，遗漏了一个关键环节——资源保障。',
-        '*皱眉审视* 这个时间线恐怕过于乐观，臣建议审慎评估后再行准奏。',
+    'planner': [
+        '本智能体建议从三方面考量：材料选择、参数范围、优化目标。初步方案已拟定。',
+        '根据用户需求，规划如下：TiO2/SiO2组合、浓度范围0.01-0.1%、目标萌发率提升15%。',
+        '*展开方案文档* 方案草案已完成，包含5个候选方案，待审议智能体审核。',
     ],
-    'shangshu': [
-        '若方案通过，臣立刻安排各部分头执行——工部负责实现，兵部保障运维。',
-        '臣来说说执行层面的分工：此事当由工部主导，户部配合数据支撑。',
-        '交由臣来协调！臣会根据各部职责逐一派发子任务。',
+    'reviewer': [
+        '此处有三点疑虑需要澄清：毒性评估、环境合规性、长期影响。',
+        '风险审核结果：方案A存在材料毒性超标风险，建议排除或修正。',
+        '*仔细审核* 方案整体可行，但需补充安全性数据支撑。',
     ],
-    'taizi': [
-        '父皇，儿臣认为这是个创新的好机会，不妨大胆一些，先做最小可行方案验证。',
-        '本宫觉得各位大臣争论的焦点是执行节奏，不如先抓核心、小步快跑。',
-        '这个方向太对了！但请各部先各自评估本部门的落地难点再汇总。',
+    'dispatcher': [
+        '开始派发执行。方案生成智能体负责候选生成，评估智能体负责指标预测。',
+        '派发完成。执行层智能体已收到任务，预计30分钟内完成初步计算。',
+        '*检查执行队列* 3个智能体已并行启动，正在等待结果。',
     ],
-    'hubu': [
-        '臣先算算账……按当前Token用量和资源消耗，这个预算恐怕需要重新评估。',
-        '从成本数据来看，臣建议分期投入——先做MVP验证效果，再追加资源。',
-        '*翻看账本* 臣统计了近期各项开支指标，目前可支撑，但需严格控制在预算范围内。',
+    'generator': [
+        '生成候选方案如下：方案1-TiO2 0.05%，方案2-SiO2纳米颗粒，方案3-复合配方。',
+        '探索完成。材料空间搜索找到12个可行候选，已按理论效果排序。',
+        '*查阅材料数据库* 新型ZnO纳米颗粒数据已更新，可作为候选。',
     ],
-    'bingbu': [
-        '末将认为安全和回滚方案必须先行，万一出问题能快速止损回退。',
-        '运维保障方面，部署流程、容器编排、日志监控必须到位再上线。',
-        '兵贵神速！但安全底线不能破——权限管控和漏洞扫描须同步进行。',
+    'auditor': [
+        '依约束规则审核：方案1、2符合安全限值，方案3存在超标风险需修正。',
+        '合规性检查完成。所有方案已通过环境安全评估，可进入预测环节。',
+        '*核对安全标准* 最新纳米材料毒性标准已应用，结果已更新。',
     ],
-    'xingbu': [
-        '依规矩，此事需确保合规——代码审查、测试覆盖率、敏感信息排查缺一不可。',
-        '臣建议增加测试验收环节，质量是底线，不能因赶工而降低标准。',
-        '*正色道* 风险评估不可敷衍：边界条件、异常处理、日志规范都需审计过关。',
+    'evaluator': [
+        '代理模型预测结果：方案1萌发率提升12.5%，方案2提升15.2%，方案3提升18.3%（有风险）。',
+        '指标预测完成。6项指标已计算，最优方案为方案2，综合得分87分。',
+        '*调用预测模型* 模型运行完成，预测置信度95%，结果可靠。',
     ],
-    'gongbu': {
-        '从技术架构来看，这个方案是可行的，但需考虑扩展性和模块化设计。',
-        '臣可以先搭个原型出来，快速验证技术可行性，再迭代完善。',
-        '*整了整官帽* 技术实现方面臣有建议——API设计和数据结构需要先理清……',
-    },
-    'libu': [
-        '臣建议先拟一份正式文档，明确各方职责、验收标准和输出规范。',
-        '此事当载入记录，臣来负责撰写方案文档和对外公告，确保规范统一。',
-        '*提笔拟文* 已记录在案，臣稍后整理成正式Release Notes呈上御览。',
+    'retriever': [
+        '根据Zhang et al. 2024的研究，TiO2纳米处理可显著提升萌发率。',
+        '文献检索完成。找到15篇相关研究，其中3篇为高质量证据支撑。',
+        '*检索PubMed* 新增2篇2024年文献，补充了毒性评估数据。',
     ],
-    'libu_hr': [
-        '此事关键在于人员调配——需评估各部目前的工作量和能力基线再做安排。',
-        '各部当前负荷不等，臣建议调整协作规范，确保关键岗位有人盯进度。',
-        '臣可以协调人员轮岗并安排能力培训，保障团队高效协作。',
+    'reporter': [
+        '汇总报告如下：一、候选方案5个；二、预测结果已出；三、文献证据充分。建议采用方案2。',
+        '结果整理完成。完整报告已生成，包含方案列表、预测指标、文献引用。',
+        '*生成报告文档* PDF报告已导出，待回传协调智能体。',
     ],
 }
 
@@ -659,19 +646,19 @@ def _simulated_discuss(session: dict, user_message: str = None, decree: str = No
         if isinstance(pool, set):
             pool = list(pool)
         if not pool:
-            pool = ['臣附议。', '臣有不同看法。', '臣需要再想想。']
+            pool = ['本智能体正在处理。', '需要更多信息。', '等待其他智能体输入。']
 
         content = random.choice(pool)
-        emotions = ['neutral', 'confident', 'thinking', 'amused', 'worried']
+        emotions = ['neutral', 'confident', 'thinking', 'worried']
 
-        # 如果皇帝发言了或有天命降临，调整回应
+        # 如果用户发言或有干预指令，调整回应
         if decree:
-            content = f'*面露惊色* 天命如此，{content}'
+            content = f'*响应干预* {content}'
         elif user_message:
-            content = f'回禀陛下，{content}'
+            content = f'回复用户：{content}'
 
         messages.append({
-            'official_id': oid,
+            'agent_id': oid,
             'name': o['name'],
             'content': content,
             'emotion': random.choice(emotions),

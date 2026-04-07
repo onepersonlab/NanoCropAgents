@@ -741,11 +741,11 @@ _AGENT_DEPTS = [
     {'id':'reviewer',    'label':'审议智能体', 'emoji':'🔍', 'role':'质量把关', 'tier':'决策层'},
     {'id':'dispatcher',  'label':'派发智能体', 'emoji':'📮', 'role':'任务调度', 'tier':'决策层'},
     # 执行层
-    {'id':'generator',        'label':'方案生成智能体', 'emoji':'🔧', 'role':'生成候选方案', 'tier':'执行层'},
-    {'id':'auditor',          'label':'审核智能体',     'emoji':'⚖️', 'role':'约束审核',   'tier':'执行层'},
-    {'id':'evaluator',        'label':'评估智能体',     'emoji':'📊', 'role':'指标预测',   'tier':'执行层'},
-    {'id':'retriever',        'label':'文献检索智能体', 'emoji':'📚', 'role':'证据检索',   'tier':'执行层'},
-    {'id':'reporter',         'label':'报告智能体',     'emoji':'📈', 'role':'结果整理',   'tier':'执行层'},
+    {'id':'generator',   'label':'方案生成智能体', 'emoji':'🔧', 'role':'生成候选方案', 'tier':'执行层'},
+    {'id':'auditor',     'label':'审核智能体',     'emoji':'⚖️', 'role':'约束审核',   'tier':'执行层'},
+    {'id':'evaluator',   'label':'评估智能体',     'emoji':'📊', 'role':'指标预测',   'tier':'执行层'},
+    {'id':'retriever',   'label':'文献检索智能体', 'emoji':'📚', 'role':'证据检索',   'tier':'执行层'},
+    {'id':'reporter',    'label':'报告智能体',     'emoji':'📈', 'role':'结果整理',   'tier':'执行层'},
 ]
 
 
@@ -957,8 +957,8 @@ _STATE_AGENT_MAP = {
     'Reviewing': 'reviewer',
     'Approved': 'dispatcher',
     'Dispatching': 'dispatcher',
-    'Executing': 'dispatcher',
-    'Aggregating': 'dispatcher',
+    'Executing': 'generator',
+    'Aggregating': 'reporter',
     'Pending': 'coordinator',
 }
 _ORG_AGENT_MAP = {
@@ -1966,9 +1966,9 @@ _STATE_FLOW = {
     'Planning':    ('Reviewing', '规划智能体', '审议智能体', '规划智能体方案提交审议智能体审核'),
     'Reviewing':   ('Approved', '审议智能体', '派发智能体', '审议智能体准奏，转派发智能体调度'),
     'Approved':    ('Dispatching', '派发智能体', '执行层', '派发智能体开始派发执行'),
-    'Dispatching': ('Executing', '派发智能体', '执行层', '任务派发中'),
-    'Executing':   ('Aggregating', '执行层', '派发智能体', '执行完成，进入汇总'),
-    'Aggregating': ('Done', '派发智能体', '协调智能体', '全流程完成，回奏用户'),
+    'Dispatching': ('Executing', '派发智能体', '方案生成智能体', '任务派发中'),
+    'Executing':   ('Aggregating', '执行层', '报告智能体', '执行完成，进入汇总'),
+    'Aggregating': ('Done', '报告智能体', '协调智能体', '全流程完成，回奏用户'),
 }
 _STATE_LABELS = {
     'Pending': '待处理', 'Coordinator': '协调中', 'Planning': '规划中', 'Reviewing': '审议中',

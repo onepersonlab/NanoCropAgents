@@ -44,31 +44,35 @@ from file_lock import atomic_json_read, atomic_json_update  # noqa: E402
 from utils import now_iso  # noqa: E402
 
 STATE_ORG_MAP = {
-    'Taizi': '太子', 'Zhongshu': '中书省', 'Menxia': '门下省',
-    'Assigned': '尚书省', 'Next': '尚书省',
-    'Doing': '执行中', 'Review': '尚书省', 'Done': '完成', 'Blocked': '阻塞',
+    'Coordinator': '协调智能体', 'Planning': '规划智能体', 'Reviewing': '审议智能体',
+    'Approved': '派发智能体', 'Dispatching': '派发智能体', 'Executing': '执行层',
+    'Aggregating': '报告智能体', 'Review': '审议智能体', 'Done': '完成', 'Blocked': '阻塞',
 }
 
 _STATE_AGENT_MAP = {
-    'Taizi': 'taizi',
-    'Zhongshu': 'zhongshu',
-    'Menxia': 'menxia',
-    'Assigned': 'shangshu',
-    'Review': 'shangshu',
-    'Pending': 'zhongshu',
+    'Coordinator': 'coordinator',
+    'Planning': 'planner',
+    'Reviewing': 'reviewer',
+    'Approved': 'dispatcher',
+    'Dispatching': 'dispatcher',
+    'Executing': 'generator',
+    'Aggregating': 'reporter',
+    'Review': 'reviewer',
+    'Pending': 'coordinator',
 }
 
 _ORG_AGENT_MAP = {
-    '礼部': 'libu', '户部': 'hubu', '兵部': 'bingbu',
-    '刑部': 'xingbu', '工部': 'gongbu', '吏部': 'libu_hr',
-    '中书省': 'zhongshu', '门下省': 'menxia', '尚书省': 'shangshu',
+    '协调智能体': 'coordinator', '规划智能体': 'planner', '审议智能体': 'reviewer',
+    '派发智能体': 'dispatcher',
+    '方案生成智能体': 'generator', '审核智能体': 'auditor', '评估智能体': 'evaluator',
+    '文献检索智能体': 'retriever', '报告智能体': 'reporter',
 }
 
 _AGENT_LABELS = {
-    'main': '太子', 'taizi': '太子',
-    'zhongshu': '中书省', 'menxia': '门下省', 'shangshu': '尚书省',
-    'libu': '礼部', 'hubu': '户部', 'bingbu': '兵部', 'xingbu': '刑部',
-    'gongbu': '工部', 'libu_hr': '吏部', 'zaochao': '钦天监',
+    'main': '协调智能体', 'coordinator': '协调智能体',
+    'planner': '规划智能体', 'reviewer': '审议智能体', 'dispatcher': '派发智能体',
+    'generator': '方案生成智能体', 'auditor': '审核智能体', 'evaluator': '评估智能体',
+    'retriever': '文献检索智能体', 'reporter': '报告智能体',
 }
 
 MAX_PROGRESS_LOG = 100  # 单任务最大进展日志条数
@@ -213,18 +217,18 @@ def cmd_create(task_id, title, state, org, official, remark=None):
 
 # ── 状态流转合法性校验 ──
 # 只允许文档定义的状态路径:
-# Pending→Taizi→Zhongshu→Menxia→Assigned→Doing→Review→Done
-# 额外: Blocked 可双向切换, Cancelled 从任意非终态可达, Next→Doing
+# Pending→Coordinator→Planning→Reviewing→Approved→Dispatching→Executing→Aggregating→Done
+# 额外: Blocked 可双向切换, Cancelled 从任意非终态可达
 _VALID_TRANSITIONS = {
-    'Pending':   {'Taizi', 'Cancelled'},
-    'Taizi':     {'Zhongshu', 'Cancelled'},
-    'Zhongshu':  {'Menxia', 'Cancelled'},
-    'Menxia':    {'Assigned', 'Zhongshu', 'Cancelled'},   # 封驳可回中书
-    'Assigned':  {'Doing', 'Next', 'Blocked', 'Cancelled'},
-    'Next':      {'Doing', 'Blocked', 'Cancelled'},
-    'Doing':     {'Review', 'Blocked', 'Cancelled'},
-    'Review':    {'Done', 'Menxia', 'Doing', 'Cancelled'},  # 可打回重审/重做
-    'Blocked':   {'Doing', 'Next', 'Assigned', 'Review', 'Cancelled'},  # 解除后回原位
+    'Pending':   {'Coordinator', 'Cancelled'},
+    'Coordinator': {'Planning', 'Cancelled'},
+    'Planning':  {'Reviewing', 'Cancelled'},
+    'Reviewing': {'Approved', 'Planning', 'Cancelled'},   # 封驳可回规划
+    'Approved':  {'Dispatching', 'Blocked', 'Cancelled'},
+    'Dispatching': {'Executing', 'Blocked', 'Cancelled'},
+    'Executing': {'Aggregating', 'Blocked', 'Cancelled'},
+    'Aggregating': {'Done', 'Blocked', 'Cancelled'},
+    'Blocked':   {'Executing', 'Dispatching', 'Approved', 'Reviewing', 'Cancelled'},  # 解除后回原位
     'Done':      set(),       # 终态
     'Cancelled': set(),       # 终态
 }
