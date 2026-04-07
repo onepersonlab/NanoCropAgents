@@ -749,6 +749,60 @@ _AGENT_DEPTS = [
     {'id':'reporter',    'label':'报告智能体',     'emoji':'📈', 'role':'结果整理',   'tier':'执行层'},
 ]
 
+def get_default_agent_config():
+    """返回默认的智能体配置（当 agent_config.json 不存在或为空时使用）"""
+    return {
+        "agents": [
+            {"id": "coordinator", "label": "协调智能体", "role": "入口分拣", "emoji": "🎯", "model": "gpt-4o-mini", "skills": []},
+            {"id": "planner", "label": "规划智能体", "role": "方案设计", "emoji": "📋", "model": "gpt-4o-mini", "skills": []},
+            {"id": "reviewer", "label": "审议智能体", "role": "质量把关", "emoji": "🔍", "model": "gpt-4o-mini", "skills": []},
+            {"id": "dispatcher", "label": "派发智能体", "role": "任务调度", "emoji": "📮", "model": "gpt-4o-mini", "skills": []},
+            {"id": "generator", "label": "方案生成智能体", "role": "生成候选方案", "emoji": "🔧", "model": "gpt-4o-mini", "skills": []},
+            {"id": "auditor", "label": "审核智能体", "role": "约束审核", "emoji": "⚖️", "model": "gpt-4o-mini", "skills": []},
+            {"id": "evaluator", "label": "评估智能体", "role": "指标预测", "emoji": "📊", "model": "gpt-4o-mini", "skills": []},
+            {"id": "retriever", "label": "文献检索智能体", "role": "证据检索", "emoji": "📚", "model": "gpt-4o-mini", "skills": []},
+            {"id": "reporter", "label": "报告智能体", "role": "结果整理", "emoji": "📈", "model": "gpt-4o-mini", "skills": []},
+        ],
+        "dispatchChannel": "",
+        "models": {"default": "gpt-4o-mini"}
+    }
+
+def get_default_officials_stats():
+    """返回默认的智能体统计数据（当 officials_stats.json 不存在或为空时使用）"""
+    officials = []
+    for dept in _AGENT_DEPTS:
+        officials.append({
+            **dept,
+            "model": "gpt-4o-mini",
+            "model_short": "gpt-4o-mini",
+            "sessions": 0,
+            "tokens_in": 0,
+            "tokens_out": 0,
+            "cache_read": 0,
+            "cache_write": 0,
+            "tokens_total": 0,
+            "messages": 0,
+            "cost_usd": 0.0,
+            "cost_cny": 0.0,
+            "last_active": None,
+            "heartbeat": {"status": "offline", "label": "离线"},
+            "tasks_done": 0,
+            "tasks_active": 0,
+            "flow_participations": 0,
+            "merit_score": 0,
+            "merit_rank": 1,
+        })
+    return {
+        "officials": officials,
+        "totals": {
+            "tasks_done": 0,
+            "tokens_total": 0,
+            "cost_cny": 0.0,
+            "cost_usd": 0.0,
+        },
+        "top_official": None,
+    }
+
 
 def _check_gateway_alive():
     """检测 Gateway 是否在运行。
@@ -2230,13 +2284,19 @@ class Handler(BaseHTTPRequestHandler):
             task_data_dir = get_task_data_dir()
             self.send_json(read_json(task_data_dir / 'live_status.json'))
         elif p == '/api/agent-config':
-            self.send_json(read_json(DATA / 'agent_config.json'))
+            cfg = read_json(DATA / 'agent_config.json', {})
+            if not cfg or not cfg.get('agents'):
+                cfg = get_default_agent_config()
+            self.send_json(cfg)
         elif p == '/api/model-change-log':
             self.send_json(read_json(DATA / 'model_change_log.json', []))
         elif p == '/api/last-result':
             self.send_json(read_json(DATA / 'last_model_change_result.json', {}))
         elif p == '/api/officials-stats':
-            self.send_json(read_json(DATA / 'officials_stats.json', {}))
+            stats = read_json(DATA / 'officials_stats.json', {})
+            if not stats or not stats.get('officials'):
+                stats = get_default_officials_stats()
+            self.send_json(stats)
         elif p == '/api/morning-brief':
             self.send_json(read_json(DATA / 'morning_brief.json', {}))
         elif p == '/api/morning-config':
