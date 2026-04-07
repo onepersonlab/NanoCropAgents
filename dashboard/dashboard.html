@@ -71,8 +71,8 @@
     .st-Planning{border-color:#a07aff44;color:#a07aff;background:#110a28}
     .st-Coordinator{border-color:#e8a04044;color:#e8a040;background:#281a08}
     .st-Reviewing{border-color:#ff9a6a44;color:#ff9a6a;background:#280f0a}
-    .st-Assigned,.st-Doing{border-color:#6a9eff44;color:#6a9eff;background:#0a1428}
-    .st-Review{border-color:#f5c84244;color:#f5c842;background:#201a08}
+    .st-Approved,.st-Dispatching,.st-Executing{border-color:#6a9eff44;color:#6a9eff;background:#0a1428}
+    .st-Approved{border-color:#f5c84244;color:#f5c842;background:#201a08}
     .st-Done{border-color:#2ecc8a44;color:var(--ok);background:#0a2018}
     .st-Blocked{border-color:#ff527044;color:var(--danger);background:#200a10}
     .st-Cancelled{border-color:#88888844;color:#888;background:#1a1a1a}
@@ -147,7 +147,7 @@
     .mr-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
     .mr-val{font-size:13px;font-weight:600;word-break:break-all}
 
-    /* ══ 省部调度 tab ══ */
+    /* ══ 智能体调度 tab ══ */
     .duty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
     .duty-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:border-color .15s}
     .duty-card:hover{border-color:#2e3d6a}
@@ -518,7 +518,7 @@
 
     .off-grid{display:none} /* legacy, hidden */
 
-    /* ══ 早朝简报 ══ */
+    /* ══ 每日简报 ══ */
     .mn-hdr{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:18px;padding:14px 18px;background:linear-gradient(135deg,#0a1228,#140e28);border:1px solid #1a2a4a;border-radius:14px}
     .mn-date{font-size:20px;font-weight:800;background:linear-gradient(135deg,#f5c842,#ff9a3c);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
     .mn-sub{font-size:12px;color:var(--muted);margin-top:2px}
@@ -653,7 +653,7 @@
 <!-- COURT CEREMONY -->
 <div class="ceremony-bg" id="ceremony" style="display:none" onclick="skipCeremony()">
   <div class="crm-glow"></div>
-  <div class="crm-line1" id="crm-l1">早朝开始</div>
+  <div class="crm-line1" id="crm-l1">每日简报</div>
   <div class="crm-line2" id="crm-l2">各部听旨</div>
   <div class="crm-line3" id="crm-l3"></div>
   <div class="crm-date" id="crm-date"></div>
@@ -681,13 +681,13 @@
   <!-- TABS -->
   <div class="tabs">
     <div class="tab active" data-tab="edicts">📜 任务看板 <span class="tbadge" id="tb-e">0</span></div>
-    <div class="tab" data-tab="monitor">🔭 省部调度 <span class="tbadge" id="tb-m">0</span></div>
-    <div class="tab" data-tab="officials">👥 官员总览</div>
+    <div class="tab" data-tab="monitor">🔭 智能体调度 <span class="tbadge" id="tb-m">0</span></div>
+    <div class="tab" data-tab="officials">👥 智能体总览</div>
     <div class="tab" data-tab="models">⚙️ 模型配置</div>
     <div class="tab" data-tab="skills">🛠️ 技能配置</div>
     <div class="tab" data-tab="sessions">💬 小任务 <span class="tbadge" id="tb-s">0</span></div>
     <div class="tab" data-tab="memorials">📜 报告存档 <span class="tbadge" id="tb-mem">0</span></div>
-    <div class="tab" data-tab="templates">📜 旨库</div>
+    <div class="tab" data-tab="templates">📜 任务模板库</div>
     <div class="tab" data-tab="morning">📰 天下要闻</div>
   </div>
 
@@ -709,33 +709,33 @@
     <div id="edict-grid" class="edict-grid"></div>
   </div>
 
-  <!-- ══ 省部调度 ══ -->
+  <!-- ══ 智能体调度 ══ -->
   <div class="panel" id="panel-monitor">
     <div id="agent-status-panel"></div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:14px">各智能体当前承接任务与执行状态 · 每5秒自动刷新</div>
     <div class="duty-grid" id="duty-grid"></div>
   </div>
 
-  <!-- ══ 官员总览 ══ -->
+  <!-- ══ 智能体总览 ══ -->
   <div class="panel" id="panel-officials">
     <div id="off-activity" class="off-activity" style="display:none"></div>
     <div id="off-kpi" class="off-kpi"></div>
     <div class="off-layout">
       <div id="off-ranklist" class="off-ranklist"></div>
-      <div id="off-detail" class="off-detail"><div class="od-empty">← 点击左侧官员查看详情</div></div>
+      <div id="off-detail" class="off-detail"><div class="od-empty">← 点击左侧智能体查看详情</div></div>
     </div>
   </div>
 
   <!-- ══ 模型配置 ══ -->
   <div class="panel" id="panel-models">
-    <div class="sec-title" style="margin-bottom:14px">各省部 · 模型配置 <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— 更改后自动重启 Gateway（约5秒）</span></div>
+    <div class="sec-title" style="margin-bottom:14px">各智能体 · 模型配置 <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— 更改后自动重启 Gateway（约5秒）</span></div>
     <div class="model-grid" id="model-grid"></div>
     <div class="cl-wrap"><div class="cl-title">变更记录</div><div id="cl-list"></div></div>
   </div>
 
   <!-- ══ 技能配置 ══ -->
   <div class="panel" id="panel-skills">
-    <div class="sec-title" style="margin-bottom:14px">各省部 · Skills 配置 <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— 点击技能查看详情，底部可添加新技能</span></div>
+    <div class="sec-title" style="margin-bottom:14px">各智能体 · Skills 配置 <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--muted)">— 点击技能查看详情，底部可添加新技能</span></div>
     <div class="skills-grid" id="skills-grid"></div>
   </div>
 
@@ -746,16 +746,16 @@
       <span style="font-size:11px;color:var(--muted)">筛选：</span>
       <span class="sess-filter active" data-sf="all" onclick="filterSessions('all',this)">全部</span>
       <span class="sess-filter" data-sf="active" onclick="filterSessions('active',this)">进行中</span>
-      <span class="sess-filter" data-sf="zhongshu" onclick="filterSessions('zhongshu',this)">规划智能体</span>
-      <span class="sess-filter" data-sf="shangshu" onclick="filterSessions('shangshu',this)">派发智能体</span>
-      <span class="sess-filter" data-sf="libu" onclick="filterSessions('libu',this)">报告智能体</span>
-      <span class="sess-filter" data-sf="hubu" onclick="filterSessions('hubu',this)">评估智能体</span>
-      <span class="sess-filter" data-sf="bingbu" onclick="filterSessions('bingbu',this)">审核智能体</span>
-      <span class="sess-filter" data-sf="xingbu" onclick="filterSessions('xingbu',this)">方案生成智能体</span>
-      <span class="sess-filter" data-sf="gongbu" onclick="filterSessions('gongbu',this)">文献检索智能体</span>
-      <span class="sess-filter" data-sf="libu_hr" onclick="filterSessions('libu_hr',this)">协调智能体</span>
-      <span class="sess-filter" data-sf="menxia" onclick="filterSessions('menxia',this)">审议智能体</span>
-      <span class="sess-filter" data-sf="zaochao" onclick="filterSessions('zaochao',this)">报告智能体</span>
+      <span class="sess-filter" data-sf="planner" onclick="filterSessions('planner',this)">规划智能体</span>
+      <span class="sess-filter" data-sf="dispatcher" onclick="filterSessions('dispatcher',this)">派发智能体</span>
+      <span class="sess-filter" data-sf="reporter" onclick="filterSessions('reporter',this)">报告智能体</span>
+      <span class="sess-filter" data-sf="evaluator" onclick="filterSessions('evaluator',this)">评估智能体</span>
+      <span class="sess-filter" data-sf="auditor" onclick="filterSessions('auditor',this)">审核智能体</span>
+      <span class="sess-filter" data-sf="generator" onclick="filterSessions('generator',this)">方案生成智能体</span>
+      <span class="sess-filter" data-sf="retriever" onclick="filterSessions('retriever',this)">文献检索智能体</span>
+      <span class="sess-filter" data-sf="coordinator" onclick="filterSessions('coordinator',this)">协调智能体</span>
+      <span class="sess-filter" data-sf="reviewer" onclick="filterSessions('reviewer',this)">审议智能体</span>
+      <span class="sess-filter" data-sf="reporter" onclick="filterSessions('reporter',this)">报告智能体</span>
     </div>
     <div id="sess-grid" class="sess-grid"></div>
   </div>
@@ -776,11 +776,11 @@
     <div id="mem-list" class="mem-list"></div>
   </div>
 
-  <!-- ══ 圣旨模板库 ══ -->
+  <!-- ══ 任务模板库 ══ -->
   <div class="panel" id="panel-templates">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
       <div style="flex:1">
-        <div class="sec-title" style="margin-bottom:2px">📜 旨库 · 圣旨模板</div>
+        <div class="sec-title" style="margin-bottom:2px">📜 任务模板库 · 任务模板</div>
         <div style="font-size:11px;color:var(--muted)">选择模板、填写参数、一键创建任务 — 降低使用门槛，快速启动任务</div>
       </div>
     </div>
@@ -945,8 +945,8 @@ const PIPE = [
   {key:'Planning',    dept:'规划智能体', icon:'📋', action:'规划'},
   {key:'Reviewing',   dept:'审议智能体', icon:'🔍', action:'审议'},
   {key:'Approved',    dept:'派发智能体', icon:'📮', action:'派发'},
-  {key:'Doing',    dept:'六部',   icon:'⚙️', action:'执行'},
-  {key:'Review',   dept:'派发智能体', icon:'🔎', action:'汇总'},
+  {key:'Dispatching', dept:'派发智能体', icon:'📮', action:'派发'},
+  {key:'Executing',    dept:'执行层',   icon:'⚙️', action:'执行'},
   {key:'Done',     dept:'回奏',   icon:'✅', action:'完成'},
 ];
 const PIPE_STATE_IDX = {Pending:0,Coordinator:1,Planning:2,Reviewing:3,Approved:4,Dispatching:5,Executing:6,Aggregating:7,Done:8,Blocked:5,Cancelled:5};
@@ -1103,7 +1103,7 @@ function renderAgentsStatus(data){
   if(!data||!data.ok) return;
   const gw = data.gateway||{};
   const agents = data.agents||[];
-  // 跳过 main（和 taizi 重复）
+  // 跳过 main（已废弃）
   const filtered = agents.filter(a=>a.id!=='main');
   const running = filtered.filter(a=>a.status==='running').length;
   const idle = filtered.filter(a=>a.status==='idle').length;
@@ -1174,22 +1174,20 @@ async function wakeAllAgents(){
 /* ══ DEPT MONITOR ══ */
 function renderMonitor(tasks){
   const DEPTS = [
-    {id:'taizi',   label:'协调智能体',  emoji:'🤴',role:'协调智能体',    rank:'协调智能体'},
-    {id:'zhongshu',label:'规划智能体',emoji:'📜',role:'规划智能体',  rank:'正一品'},
-    {id:'menxia',  label:'审议智能体',emoji:'🔍',role:'审议智能体',    rank:'正一品'},
-    {id:'shangshu',label:'派发智能体',emoji:'📮',role:'派发智能体',  rank:'正一品'},
-    {id:'libu',    label:'报告智能体',  emoji:'📝',role:'报告智能体尚书',rank:'正二品'},
-    {id:'hubu',    label:'评估智能体',  emoji:'💰',role:'评估智能体尚书',rank:'正二品'},
-    {id:'bingbu',  label:'审核智能体',  emoji:'⚔️',role:'审核智能体尚书',rank:'正二品'},
-    {id:'xingbu',  label:'方案生成智能体',  emoji:'⚖️',role:'方案生成智能体尚书',rank:'正二品'},
-    {id:'gongbu',  label:'文献检索智能体',  emoji:'🔧',role:'文献检索智能体尚书',rank:'正二品'},
-    {id:'libu_hr', label:'协调智能体',  emoji:'👔',role:'协调智能体尚书',rank:'正二品'},
-    {id:'zaochao', label:'报告智能体',emoji:'📰',role:'朝报官',  rank:'正三品'},
+    {id:'coordinator', label:'协调智能体',   emoji:'🎯', role:'入口分拣',  rank:'入口层'},
+    {id:'planner',     label:'规划智能体',   emoji:'📋', role:'方案设计',  rank:'决策层'},
+    {id:'reviewer',    label:'审议智能体',   emoji:'🔍', role:'质量把关',  rank:'决策层'},
+    {id:'dispatcher',  label:'派发智能体',   emoji:'📮', role:'任务调度',  rank:'决策层'},
+    {id:'generator',   label:'方案生成智能体', emoji:'🔧', role:'生成候选方案', rank:'执行层'},
+    {id:'auditor',     label:'审核智能体',   emoji:'⚖️', role:'约束审核',  rank:'执行层'},
+    {id:'evaluator',   label:'评估智能体',   emoji:'📊', role:'指标预测',  rank:'执行层'},
+    {id:'retriever',   label:'文献检索智能体', emoji:'📚', role:'证据检索',  rank:'执行层'},
+    {id:'reporter',    label:'报告智能体',   emoji:'📈', role:'结果整理',  rank:'执行层'},
   ];
-
+  // 每个智能体当前承接的任务：从 NCA 任务里找 org 匹配且非 Done 的
   // 每个部门当前承接的任务：从 JJC 任务里找 org 匹配且非 Done 的
-  const activeTasks = tasks.filter(t => isEdict(t) && t.state !== 'Done' && t.state !== 'Next');
-  // 官员统计数据（如已加载）
+  const activeTasks = tasks.filter(t => isEdict(t) && t.state !== 'Done' && t.state !== 'Cancelled');
+  // 智能体统计数据（如已加载）
   const offMap = {};
   if(officialsData && officialsData.officials){
     officialsData.officials.forEach(o=>offMap[o.id]=o);
@@ -1203,7 +1201,7 @@ function renderMonitor(tasks){
     const recentEdict = tasks.filter(t=>isEdict(t))
       .find(t=>(t.flow_log||[]).some(f=>f.from===d.label||f.to===d.label));
 
-    const isActive = myTasks.some(t=>t.state==='Doing');
+    const isActive = myTasks.some(t=>t.state==='Executing');
     const isBlocked = myTasks.some(t=>t.state==='Blocked');
     const off = offMap[d.id]||{};
     const hb = off.heartbeat||{status:'idle',label:'⚪'};
@@ -1302,8 +1300,8 @@ function openTask(id){
       ${canStop ? `<button class="btn-action btn-stop" onclick="confirmAction('${esc(t.id)}','stop')">⏸ 叫停任务</button>
       <button class="btn-action btn-cancel" onclick="confirmAction('${esc(t.id)}','cancel')">🚫 取消任务</button>` : ''}
       ${canResume ? `<button class="btn-action btn-resume" onclick="taskAction('${esc(t.id)}','resume','恢复执行')">▶️ 恢复执行</button>` : ''}
-      ${['Review','Menxia'].includes(t.state) ? `<button class="btn-action" style="background:#2ecc8a22;color:#2ecc8a;border:1px solid #2ecc8a44" onclick="reviewAction('${esc(t.id)}','approve')">✅ 准奏</button>
-      <button class="btn-action" style="background:#ff527022;color:#ff5270;border:1px solid #ff527044" onclick="reviewAction('${esc(t.id)}','reject')">🚫 封驳</button>` : ''}
+      ${['Reviewing'].includes(t.state) ? `<button class="btn-action" style="background:#2ecc8a22;color:#2ecc8a;border:1px solid #2ecc8a44" onclick="reviewAction('${esc(t.id)}','approve')">✅ 批准</button>
+      <button class="btn-action" style="background:#ff527022;color:#ff5270;border:1px solid #ff527044" onclick="reviewAction('${esc(t.id)}','reject')">🚫 驳回</button>` : ''}
       ${['Pending','Coordinator','Planning','Reviewing','Approved','Dispatching','Executing','Aggregating'].includes(t.state) ? `<button class="btn-action" style="background:#7c5cfc18;color:#7c5cfc;border:1px solid #7c5cfc44" onclick="advanceState('${esc(t.id)}','${esc(t.state)}')">⏩ 推进到下一步</button>` : ''}
     </div>
 
@@ -1646,7 +1644,7 @@ function renderLiveActivity(data){
   if(dot){dot.classList.toggle('idle',!isActive);}
 
   // Agent label map
-  const _agentLabels={main:'协调智能体',zhongshu:'规划智能体',menxia:'审议智能体',shangshu:'派发智能体',libu:'报告智能体',hubu:'评估智能体',bingbu:'审核智能体',xingbu:'方案生成智能体',gongbu:'文献检索智能体',libu_hr:'协调智能体',zaochao:'报告智能体'};
+  const _agentLabels={coordinator:'协调智能体',planner:'规划智能体',reviewer:'审议智能体',dispatcher:'派发智能体',generator:'方案生成智能体',auditor:'审核智能体',evaluator:'评估智能体',retriever:'文献检索智能体',reporter:'报告智能体'};
 
   const renderEntry=(a)=>{
     const time=a.at?fmtActivityTime(a.at):'';
@@ -1960,7 +1958,7 @@ async function submitAddSkill(e, agentId, agentLabel){
 async function loadLive(){
   try{
     liveStatus=await fetchJ(API+'/live-status');
-    // 提前加载官员数据，供省部调度 Tab 使用
+    // 提前加载智能体数据，供智能体调度 Tab 使用
     if(!officialsData){
       try{ officialsData = await fetchJ(API+'/officials-stats'); }catch(e){}
     }
@@ -2008,9 +2006,9 @@ let sessFilter = 'all';
 function humanTitle(t){
   let title = t.title||'';
   // "褚凤天 会话" → ok, keep
-  // "agent:shangshu:main 会话" → "派发智能体 主会话"
-  // "agent:gongbu:subagent:xxx 会话" → "文献检索智能体 子任务"
-  // "agent:shangshu:cron:xxx 会话" → "派发智能体 定时任务"
+  // "agent:dispatcher:main 会话" → "派发智能体 主会话"
+  // "agent:retriever:subagent:xxx 会话" → "文献检索智能体 子任务"
+  // "agent:dispatcher:cron:xxx 会话" → "派发智能体 定时任务"
   // "heartbeat 会话" → "心跳检测"
   if(title==='heartbeat 会话') return '💓 心跳检测';
   const m = title.match(/^agent:(\w+):(\w+)/);
@@ -2187,7 +2185,7 @@ function extractAgent(t){
   const sm = t.sourceMeta||{};
   if(sm.agentId){
     // "mc-gateway-xxx" → try to match known agents
-    const known = ['taizi','zhongshu','menxia','shangshu','hubu','libu','bingbu','xingbu','gongbu','zaochao'];
+    const known = ['coordinator','planner','reviewer','dispatcher','generator','auditor','evaluator','retriever','reporter'];
     for(const k of known){ if(sm.agentId.includes(k)) return k; }
   }
   return (t.org||'').replace(/省|部/g,'').toLowerCase();
@@ -2497,12 +2495,12 @@ function renderOfficials(data){
     actEl.style.display='flex';
     actEl.innerHTML=`<span class="act-label">🟢 当前活跃：</span>`
       +alive.map(o=>`<span class="act-dot alive">${o.emoji} ${o.role}</span>`).join('')
-      +`<span style="color:var(--muted);font-size:11px;margin-left:auto">其余官员待命</span>`;
+      +`<span style="color:var(--muted);font-size:11px;margin-left:auto">其余智能体待命</span>`;
   }
 
   // KPI 行
   document.getElementById('off-kpi').innerHTML=`
-    <div class="kpi"><div class="kpi-v blue">${offs.length}</div><div class="kpi-l">在职官员</div></div>
+    <div class="kpi"><div class="kpi-v blue">${offs.length}</div><div class="kpi-l">在职智能体</div></div>
     <div class="kpi"><div class="kpi-v gold">${totals.tasks_done||0}</div><div class="kpi-l">累计完成任务</div></div>
     <div class="kpi"><div class="kpi-v ${(totals.cost_cny||0)>20?'warn':'green'}">¥${totals.cost_cny||0}</div><div class="kpi-l">累计费用（含缓存）</div></div>
     <div class="kpi"><div class="kpi-v" style="font-size:16px;padding-top:4px">${esc(data.top_official||'—')}</div><div class="kpi-l">功绩最高</div></div>`;
@@ -2634,9 +2632,9 @@ async function taskAction(taskId, action, reason){
   }catch(e){ toast('服务器连接失败','err'); }
 }
 
-/* ══ REVIEW ACTION (御批 准奏/封驳) ══ */
+/* ══ REVIEW ACTION (审批 批准/驳回) ══ */
 async function reviewAction(taskId, action){
-  const labels = {approve:'准奏', reject:'封驳'};
+  const labels = {approve:'批准', reject:'驳回'};
   const comment = prompt(`${labels[action]} ${taskId}\n\n请输入批注（可留空）：`);
   if(comment === null) return; // cancelled
   try{
@@ -2647,7 +2645,7 @@ async function reviewAction(taskId, action){
 }
 
 /* ══ ADVANCE STATE (手动推进到下一步) ══ */
-const _NEXT_LABELS = {Taizi:'规划智能体起草', Zhongshu:'审议智能体审议', Menxia:'派发智能体派发', Assigned:'开始执行', Doing:'进入审查', Review:'完成'};
+const _NEXT_LABELS = {Coordinator:'转规划智能体设计', Planning:'提交审议智能体审议', Reviewing:'转派发智能体派发', Approved:'开始执行', Dispatching:'执行任务', Executing:'进入汇总', Aggregating:'完成任务'};
 async function advanceState(taskId, curState){
   const next = _NEXT_LABELS[curState] || '下一步';
   const comment = prompt(`⏩ 手动推进 ${taskId}\n当前: ${curState} → 下一步: ${next}\n\n请输入说明（可留空）：`);
@@ -2961,7 +2959,7 @@ function openMemorial(jsonStr){
     ${t.output&&t.output!=='-'?`<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">
       <div style="font-size:11px;font-weight:600;margin-bottom:4px">📦 产出物</div>
       <code style="font-size:11px;word-break:break-all">${esc(t.output)}</code>
-      <button class="btn btn-g" onclick="loadTaskOutput('${esc(t.id)}')" style="font-size:11px;padding:4px 12px;margin-left:8px">📖 查看奏章</button>
+      <button class="btn btn-g" onclick="loadTaskOutput('${esc(t.id)}')" style="font-size:11px;padding:4px 12px;margin-left:8px">📖 查看报告</button>
       <div id="task-output-content" style="display:none;margin-top:10px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;max-height:400px;overflow-y:auto;font-size:12px;line-height:1.7;white-space:pre-wrap;word-break:break-word"></div>
     </div>`:''}
 
@@ -3006,7 +3004,7 @@ function exportMemorial(taskIdJson){
   navigator.clipboard.writeText(md).then(()=>toast('✅ 报告已复制为 Markdown','ok')).catch(()=>toast('复制失败','err'));
 }
 
-/* ══ TEMPLATES (圣旨模板库) ══ */
+/* ══ TEMPLATES (任务模板库) ══ */
 const TEMPLATES = [
   {id:'tpl-weekly-report', cat:'日常办公', icon:'📝', name:'周报生成',
    desc:'基于本周看板数据和各部产出，自动生成结构化周报',
@@ -3127,7 +3125,7 @@ function openTemplateForm(tplId){
   const t = TEMPLATES.find(x=>x.id===tplId);
   if(!t) return;
   document.getElementById('modal-body').innerHTML=`
-    <div style="font-size:11px;color:var(--acc);font-weight:700;letter-spacing:.04em;margin-bottom:4px">圣旨模板</div>
+    <div style="font-size:11px;color:var(--acc);font-weight:700;letter-spacing:.04em;margin-bottom:4px">任务模板</div>
     <div style="font-size:20px;font-weight:800;margin-bottom:6px">${t.icon} ${esc(t.name)}</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:18px">${esc(t.desc)}</div>
     <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap">${t.depts.map(d=>`<span class="tpl-dept">${esc(d)}</span>`).join('')}<span style="font-size:11px;color:var(--muted);margin-left:auto">${esc(t.est)} · ${esc(t.cost)}</span></div>
@@ -3231,7 +3229,7 @@ function toggleTheme(){
   }
 })();
 
-/* ══ TASK OUTPUT / 奏章查看 ══ */
+/* ══ TASK OUTPUT / 报告查看 ══ */
 async function loadTaskOutput(taskId){
   const el = document.getElementById('task-output-content');
   if(!el) return;
