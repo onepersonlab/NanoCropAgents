@@ -42,20 +42,17 @@ def state_from_session(age_ms, aborted):
 
 def detect_official(agent_id):
     mapping = {
-        'main':    ('储君', '太子'),        # legacy id for taizi
-        'taizi':   ('储君', '太子'),
-        'zhongshu': ('中书令', '中书省'),
-        'menxia':  ('侍中', '门下省'),
-        'shangshu': ('尚书令', '尚书省'),
-        'hubu':    ('户部尚书', '户部'),
-        'libu':    ('礼部尚书', '礼部'),
-        'bingbu':  ('兵部尚书', '兵部'),
-        'xingbu':  ('刑部尚书', '刑部'),
-        'gongbu':  ('工部尚书', '工部'),
-        'libu_hr': ('吏部尚书', '吏部'),
-        'zaochao': ('钦天监', '钦天监'),
+        'coordinator': ('协调智能体', '入口层'),
+        'planner':     ('规划智能体', '决策层'),
+        'reviewer':    ('审议智能体', '决策层'),
+        'dispatcher':  ('派发智能体', '决策层'),
+        'generator':   ('方案生成智能体', '执行层'),
+        'auditor':     ('审核智能体', '执行层'),
+        'evaluator':   ('评估智能体', '执行层'),
+        'retriever':   ('文献检索智能体', '执行层'),
+        'reporter':    ('报告智能体', '执行层'),
     }
-    return mapping.get(agent_id, ('尚书令', '尚书省'))
+    return mapping.get(agent_id, ('协调智能体', '入口层'))
 
 
 def load_activity(session_file, limit=12):

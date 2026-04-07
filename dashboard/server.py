@@ -31,9 +31,10 @@ from court_discuss import (
 log = logging.getLogger('server')
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(name)s] %(message)s', datefmt='%H:%M:%S')
 
-CHANNELS_DIR = pathlib.Path(__file__).parent.parent / 'edict' / 'backend' / 'app' / 'channels'
-if str(CHANNELS_DIR.parent) not in sys.path:
-    sys.path.insert(0, str(CHANNELS_DIR.parent))
+# 通知渠道模块（本地 dashboard/channels）
+CHANNELS_DIR = pathlib.Path(__file__).parent / 'channels'
+if str(CHANNELS_DIR) not in sys.path:
+    sys.path.insert(0, str(CHANNELS_DIR))
 from channels import get_channel, get_channel_info, CHANNELS as NOTIFICATION_CHANNELS
 
 OCLAW_HOME = pathlib.Path.home() / '.openclaw'

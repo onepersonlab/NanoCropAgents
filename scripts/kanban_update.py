@@ -1,33 +1,28 @@
 #!/usr/bin/env python3
 """
-看板任务更新工具 - 供各省部 Agent 调用
+看板任务更新工具 - 供各智能体 Agent 调用
 
 本工具操作 data/tasks_source.json（JSON 看板模式）。
-如果您已部署 edict/backend（Postgres + Redis 事件总线模式），
-请使用 edict/backend API 端点代替本脚本，或运行迁移脚本：
-  python3 edict/migration/migrate_json_to_pg.py
-
-两种模式互相独立，数据不会自动同步。
 
 用法:
-  # 新建任务（收旨时）
-  python3 kanban_update.py create JJC-20260223-012 "任务标题" Zhongshu 中书省 中书令
+  # 新建任务
+  python3 kanban_update.py create NCA-20260407-001 "任务标题" Coordinator 协调智能体 协调智能体
 
   # 更新状态
-  python3 kanban_update.py state JJC-20260223-012 Menxia "规划方案已提交门下省"
+  python3 kanban_update.py state NCA-20260407-001 Reviewing "方案已提交审议智能体"
 
   # 添加流转记录
-  python3 kanban_update.py flow JJC-20260223-012 "中书省" "门下省" "规划方案提交审核"
+  python3 kanban_update.py flow NCA-20260407-001 "规划智能体" "审议智能体" "方案提交审核"
 
   # 完成任务
-  python3 kanban_update.py done JJC-20260223-012 "/path/to/output" "任务完成摘要"
+  python3 kanban_update.py done NCA-20260407-001 "/path/to/output" "任务完成摘要"
 
   # 添加/更新子任务 todo
-  python3 kanban_update.py todo JJC-20260223-012 1 "实现API接口" in-progress
-  python3 kanban_update.py todo JJC-20260223-012 1 "" completed
+  python3 kanban_update.py todo NCA-20260407-001 1 "生成候选方案" in-progress
+  python3 kanban_update.py todo NCA-20260407-001 1 "" completed
 
   # 🔥 实时进展汇报（Agent 主动调用，频率不限）
-  python3 kanban_update.py progress JJC-20260223-012 "正在分析需求，拟定3个子方案" "1.调研技术选型|2.撰写设计文档|3.实现原型"
+  python3 kanban_update.py progress NCA-20260407-001 "正在生成候选方案" "1.材料选择✅|2.参数优化🔄|3.预测评估"
 """
 import datetime
 import json, pathlib, sys, subprocess, logging, os, re

@@ -15,18 +15,15 @@ DATA = BASE / 'data'
 OPENCLAW_CFG = pathlib.Path.home() / '.openclaw' / 'openclaw.json'
 
 ID_LABEL = {
-    'taizi':    {'label': '太子',   'role': '太子',     'duty': '飞书消息分拣与回奏',  'emoji': '🤴'},
-    'main':     {'label': '太子',   'role': '太子',     'duty': '飞书消息分拣与回奏',  'emoji': '🤴'},  # 兼容旧配置
-    'zhongshu': {'label': '中书省', 'role': '中书令',   'duty': '起草任务令与优先级',  'emoji': '📜'},
-    'menxia':   {'label': '门下省', 'role': '侍中',     'duty': '审议与退回机制',      'emoji': '🔍'},
-    'shangshu': {'label': '尚书省', 'role': '尚书令',   'duty': '派单与升级裁决',      'emoji': '📮'},
-    'libu':     {'label': '礼部',   'role': '礼部尚书', 'duty': '文档/汇报/规范',      'emoji': '📝'},
-    'hubu':     {'label': '户部',   'role': '户部尚书', 'duty': '资源/预算/成本',      'emoji': '💰'},
-    'bingbu':   {'label': '兵部',   'role': '兵部尚书', 'duty': '工程实现与架构设计',  'emoji': '⚔️'},
-    'xingbu':   {'label': '刑部',   'role': '刑部尚书', 'duty': '合规/审计/红线',      'emoji': '⚖️'},
-    'gongbu':   {'label': '工部',   'role': '工部尚书', 'duty': '基础设施与部署运维',  'emoji': '🔧'},
-    'libu_hr':  {'label': '吏部',   'role': '吏部尚书', 'duty': '人事/培训/Agent管理',  'emoji': '👔'},
-    'zaochao':  {'label': '钦天监', 'role': '朝报官',   'duty': '每日新闻采集与简报',  'emoji': '📰'},
+    'coordinator': {'label': '协调智能体', 'role': '入口分拣', 'duty': '消息分拣与需求提炼', 'emoji': '🎯'},
+    'planner':     {'label': '规划智能体', 'role': '方案设计', 'duty': '将用户目标转为可执行计划', 'emoji': '📋'},
+    'reviewer':    {'label': '审议智能体', 'role': '质量把关', 'duty': '审议任务草案，可封驳', 'emoji': '🔍'},
+    'dispatcher':  {'label': '派发智能体', 'role': '任务调度', 'duty': '拆分子任务，派发给执行层', 'emoji': '📮'},
+    'generator':   {'label': '方案生成智能体', 'role': '生成候选方案', 'duty': '生成候选纳米处理方案', 'emoji': '🔧'},
+    'auditor':     {'label': '审核智能体', 'role': '约束审核', 'duty': '检查合法性和约束', 'emoji': '⚖️'},
+    'evaluator':   {'label': '评估智能体', 'role': '指标预测', 'duty': '调用代理模型预测6个指标', 'emoji': '📊'},
+    'retriever':   {'label': '文献检索智能体', 'role': '证据检索', 'duty': '检索文献证据', 'emoji': '📚'},
+    'reporter':    {'label': '报告智能体', 'role': '结果整理', 'duty': '整理输出结果，回奏协调智能体', 'emoji': '📈'},
 }
 
 KNOWN_MODELS = [
@@ -311,7 +308,7 @@ def deploy_soul_files():
         if src_text != dst_text:
             ws_dst.write_text(src_text, encoding='utf-8')
             deployed += 1
-        # 太子兼容：同步一份到 legacy main agent 目录
+        # 协调智能体兼容：同步一份到 legacy main agent 目录
         if runtime_id == 'taizi':
             ag_dst = pathlib.Path.home() / '.openclaw/agents/main/SOUL.md'
             ag_dst.parent.mkdir(parents=True, exist_ok=True)
