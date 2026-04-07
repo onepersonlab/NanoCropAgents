@@ -2216,7 +2216,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         p = urlparse(self.path).path.rstrip('/')
         if p in ('', '/dashboard', '/dashboard.html'):
-            self.send_file(DIST / 'index.html')
+            if DIST.exists():
+                self.send_file(DIST / 'index.html')
+            else:
+                self.send_file(BASE / 'dashboard.html')
         elif p == '/healthz':
             task_data_dir = get_task_data_dir()
             checks = {'dataDir': task_data_dir.is_dir(), 'tasksReadable': (task_data_dir / 'tasks_source.json').exists()}
